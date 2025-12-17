@@ -7,6 +7,7 @@ import (
 )
 
 type CobrancaTaskData struct {
+	Convenio                   int           `json:"convenio"`
 	IdProposta                 int           `json:"idProposta"`
 	WebhookUrl                 string        `json:"urlWebhook"`
 	IdempotencyKey             string        `json:"idempotencyKey,omitempty"`

@@ -1,13 +1,12 @@
 # Confiapay-BMP
 
-Microserviço que acessa as funcionalidades da API do Banco BMP.
+Microserviço que acessa as funcionalidades da API de Cobranças do Banco BMP.
 
 
 
 ## Descrição
 
-Microserviço de acesso aos serviços bancários do Banco BMP, permite simulação, gravação e consulta de propostas.
-Produtos suportados: FGTS, Crédito Pessoal INSS, Crédito CLT.
+Microserviço de acesso aos serviços de geração,caonsulta e cancelamento de cobranças na API do BMP.
  
 
 
@@ -44,7 +43,7 @@ Clonando repositório e rodando localmente(considerando um servidor rabbitmq rod
 
 ## Documentação
 
-- [Documentação da API](https://bmp-fgts.Confiapay.com.br/docs)
+- [Documentação da API](https://bmp.confiapay.com.br/docs)
 
 
 

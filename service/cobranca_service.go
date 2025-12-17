@@ -7,6 +7,7 @@ import (
 	"cobranca-bmp/models"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strconv"
 	"time"
@@ -17,7 +18,7 @@ type CobrancalService struct {
 	ctx            context.Context
 	logger         *slog.Logger
 	loc            *time.Location
-	client         CreditoPessoalClient
+	client         CobrancaClient
 	queue          QueueProducer
 	cache          *cache.RedisCache
 	webhookService *WebhookService
@@ -38,7 +39,7 @@ func (a *CobrancalService) SetProducer(q any) error {
 }
 
 // Instancia um novo service.
-func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Location, client CreditoPessoalClient, webhookService *WebhookService, cache *cache.RedisCache) *CobrancalService {
+func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Location, client CobrancaClient, webhookService *WebhookService, cache *cache.RedisCache) *CobrancalService {
 	return &CobrancalService{
 		ctx:            ctx,
 		logger:         logger,
@@ -48,9 +49,24 @@ func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Loca
 	}
 }
 
-func (a *CobrancalService) Auth(key, client string) (string, error) {
+func (a *CobrancalService) Auth(key string, convenio int, expire bool) (string, error) {
+	var privateKey, redisKey, clientId string
+	switch convenio {
+	case config.INSSCP_CONVENIO, config.CREDITO_PESSOAL_CONVENIO:
+		privateKey = config.INSSCP_JWT_KEY
+		clientId = config.INSSCP_CLIENT_ID
+		redisKey = "insscp-cached-token"
 
-	return a.client.Auth(key, client, false, config.INSSCP_JWT_KEY)
+	case config.FGTS_CONVENIO:
+		privateKey = config.FGTS_JWT_KEY
+		clientId = config.FGTS_CLIENT_ID
+		redisKey = "fgts-cached-token"
+
+	default:
+		return "", models.NewAPIError("", fmt.Sprintf("Convênio %d inválido", convenio), "")
+	}
+
+	return a.client.Auth(key, clientId, expire, privateKey, redisKey)
 }
 
 func (a *CobrancalService) Cobranca(payload models.CobrancaTaskData) (any, string, int, error) {
@@ -62,10 +78,10 @@ func (a *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 	var status string
 	var errCobrancas error
 	var statusCode int
-	var data any
+	var data models.GerarCobrancaResponse
 
 	if payload.Token == "" {
-		token, err := a.client.Auth(payload.IdempotencyKey, config.INSSCP_CLIENT_ID, false, config.INSSCP_JWT_KEY)
+		token, err := a.Auth(payload.IdempotencyKey, payload.Convenio, false)
 		if err != nil {
 			helpers.LogError(a.ctx, a.logger, a.loc, "cobrança crédito pessoal", "401", "Erro ao buscar token", err.Error(), err)
 			return a.HandleErrorCobranca(config.API_STATUS_UNAUTHORIZED, 401, *payload, models.NewAPIError("Erro ao buscar token", strconv.Itoa(payload.IdProposta), "CONFIAPAY"))
@@ -84,7 +100,17 @@ func (a *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 
 	if errCobrancas != nil {
 		return a.HandleErrorCobranca(status, statusCode, *payload, errCobrancas.(models.APIError))
+	} else if len(data.Cobrancas) < 1 {
+		return a.HandleErrorCobranca(status, statusCode, *payload, models.NewAPIError("", "Cobrancas não geradas", payload.CobrancaUnicaFrontendInput.Dto.CodigoOperacao))
+
 	}
+
+	var CachedCobranca = models.CachedCobranca{
+		CodLiquidacao: data.Cobrancas[0].CodigoLiquidacao,
+		UrlWebhook:    payload.WebhookUrl,
+	}
+
+	a.cache.SaveData(strconv.Itoa(payload.NumeroCCB), strconv.Itoa(payload.CobrancaUnicaFrontendInput.NroParcelas[0]), CachedCobranca, time.Now().Add(time.Hour*24))
 
 	if payload.CalledAssync {
 		a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, data, "cobranca service"))
@@ -144,12 +170,12 @@ func (a CobrancalService) SendToDLQ(data any) error {
 
 }
 
-func (a *CobrancalService) GerarCobrancaParcela(payload *models.CobrancaTaskData) (any, int, string, error) {
+func (a *CobrancalService) GerarCobrancaParcela(payload *models.CobrancaTaskData) (models.GerarCobrancaResponse, int, string, error) {
 
 	data, statusCode, status, err := a.client.GerarCobrancaParcela(payload.CobrancaUnicaFrontendInput.CobrancaUnicaInput, payload.Token, payload.IdempotencyKey)
 
 	if status == config.API_STATUS_UNAUTHORIZED {
-		token, authErr := a.client.Auth(strconv.Itoa(a.cache.GenID()), config.INSSCP_CLIENT_ID, true, config.INSSCP_JWT_KEY)
+		token, authErr := a.Auth(strconv.Itoa(a.cache.GenID()), payload.Convenio, true)
 		if authErr != nil {
 			return data, statusCode, status, err
 		}
@@ -168,9 +194,9 @@ func (a *CobrancalService) GerarCobrancaParcela(payload *models.CobrancaTaskData
 	payload.Reset()
 	//a.updateService.UpdatePropostaParcelasCodLiquidacao(payload.IdProposta, &data, false)
 
-	return nil, 200, "", nil
+	return data, 200, "", nil
 }
-func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.CobrancaTaskData) (any, int, string, error) {
+func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.CobrancaTaskData) (models.GerarCobrancaResponse, int, string, error) {
 	var payloadBMP models.MultiplasCobrancasInput
 	payloadBMP.Dto = models.DtoCobranca{
 		CodigoProposta: payload.NumeroAcompanhamento,
@@ -189,7 +215,7 @@ func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 	data, statusCode, status, err := a.client.GerarCobrancaParcelasMultiplas(payloadBMP, payload.Token, payload.IdempotencyKey)
 
 	if status == config.API_STATUS_UNAUTHORIZED {
-		token, authErr := a.client.Auth(strconv.Itoa(a.cache.GenID()), config.INSSCP_CLIENT_ID, true, config.INSSCP_JWT_KEY)
+		token, authErr := a.Auth(strconv.Itoa(a.cache.GenID()), payload.Convenio, true)
 		if authErr != nil {
 			return data, statusCode, status, err
 		}
@@ -213,7 +239,7 @@ func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 
 func (a *CobrancalService) CancelarCobranca(payload models.CobrancaTaskData) (any, string, int, error) {
 	idempotencyKey := strconv.Itoa(a.cache.GenID())
-	token, err := a.client.Auth(idempotencyKey, config.INSSCP_CLIENT_ID, false, config.INSSCP_JWT_KEY)
+	token, err := a.Auth(idempotencyKey, payload.Convenio, false)
 	if err != nil {
 		errApi, ok := err.(models.APIError)
 		if !ok {
@@ -228,7 +254,7 @@ func (a *CobrancalService) CancelarCobranca(payload models.CobrancaTaskData) (an
 	if err != nil {
 
 		if status == config.API_STATUS_UNAUTHORIZED {
-			token, authErr := a.client.Auth(strconv.Itoa(a.cache.GenID()), config.INSSCP_CLIENT_ID, true, config.INSSCP_JWT_KEY)
+			token, authErr := a.Auth(strconv.Itoa(a.cache.GenID()), payload.Convenio, true)
 
 			if authErr != nil {
 				errApi, ok := err.(models.APIError)
@@ -255,9 +281,9 @@ func (a *CobrancalService) CancelarCobranca(payload models.CobrancaTaskData) (an
 	return data, status, statusCode, nil
 }
 
-func (a *CobrancalService) ConsultarCobranca(payload models.ConsultarDetalhesInput) (models.ConsultaCobrancaResponse, int, string, error) {
+func (a *CobrancalService) ConsultarCobranca(payload models.ConsultarDetalhesInput, convenio int) (models.ConsultaCobrancaResponse, int, string, error) {
 	idempotencyKey := strconv.Itoa(a.cache.GenID())
-	token, err := a.client.Auth(idempotencyKey, config.INSSCP_CLIENT_ID, false, config.INSSCP_JWT_KEY)
+	token, err := a.Auth(idempotencyKey, convenio, false)
 	if err != nil {
 		helpers.LogError(a.ctx, a.logger, a.loc, "cobrança crédito pessoal", "401", "Erro ao buscar token", err.Error(), err)
 		return models.ConsultaCobrancaResponse{}, 401, "", err
@@ -265,7 +291,7 @@ func (a *CobrancalService) ConsultarCobranca(payload models.ConsultarDetalhesInp
 	data, statusCode, status, err := a.client.ConsultarCobranca(payload, token, idempotencyKey)
 	if err != nil {
 		if status == config.API_STATUS_UNAUTHORIZED {
-			token, authErr := a.client.Auth(strconv.Itoa(a.cache.GenID()), config.INSSCP_CLIENT_ID, true, config.INSSCP_JWT_KEY)
+			token, authErr := a.Auth(strconv.Itoa(a.cache.GenID()), convenio, true)
 			if authErr != nil {
 				return data, statusCode, status, err
 			}

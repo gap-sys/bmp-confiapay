@@ -59,14 +59,16 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(models.NewAPIError(config.ERR_PARSE_STR, helpers.ParseJsonError(err.Error()), ""))
 		}
 
-		//if err := input.Validate(); err != nil {
-		//	return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
-		//	}
+		if err := input.Validate(); err != nil {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
+		}
 
 		IdProposta, _ := strconv.Atoi(input.Dto.CodigoOperacao)
 
 		var payload = models.NewCobrancaTastkData(a.cache.GenID(), 1, IdProposta, input.Dto.CodigoProposta)
 		payload.WebhookUrl = input.UrlWebhook
+		payload.Convenio = input.IdCOnvenio
+		payload.CobrancaUnicaFrontendInput = input
 
 		if err := payload.Validate(); err != nil {
 			return c.Status(422).JSON(err)
@@ -159,16 +161,6 @@ func (a *CobrancaCreditoPessoalController) ConsultarCobrancas() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
 		}
 
-		/*	dataInclusaoConsulta, err := a.cobrancaService.FindTipoData(input.IdProposta, config.CREDITO_PESSOAL_DATA_INCLUSAO_DE_COBRANCA)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(models.NewAPIError("", "Falha ao buscar fluxo de proposta", err.Error(), strconv.Itoa(input.IdProposta), "CONFIAPAY"))
-			}
-
-			if dataInclusaoConsulta < 1 {
-				return c.Status(fiber.StatusUnprocessableEntity).JSON(models.NewAPIError("", "Proposta não possui cobrancas geradas", strconv.Itoa(input.IdProposta), "CONFIAPAY"))
-
-			} */
-
 		data, statusCode, _, err := a.cobrancaService.ConsultarCobranca(models.ConsultarDetalhesInput{
 			DTO: models.DtoCobranca{CodigoProposta: input.NumeroAcompanhamento,
 				CodigoOperacao: strconv.Itoa(input.IdProposta),
@@ -178,7 +170,7 @@ func (a *CobrancaCreditoPessoalController) ConsultarCobrancas() fiber.Handler {
 				TrazerBoleto:          true,
 				TrazerAgendaDetalhada: true,
 			},
-		})
+		}, input.Convenio)
 
 		if err != nil {
 			return c.Status(statusCode).JSON(err)

@@ -21,26 +21,24 @@ import (
 
 // Api client representa um cliente para a API externa(será extendido para outros clientes específicos neste pacote)
 type APIClient struct {
-	client   *http.Client
-	cache    *cache.RedisCache
-	baseUrl  string
-	authUrl  string
-	loc      *time.Location
-	ctx      context.Context
-	logger   *slog.Logger
-	tokenKey string
+	client  *http.Client
+	cache   *cache.RedisCache
+	baseUrl string
+	authUrl string
+	loc     *time.Location
+	ctx     context.Context
+	logger  *slog.Logger
 }
 
-func NewApiClient(ctx context.Context, loc *time.Location, cache *cache.RedisCache, logger *slog.Logger, baseUrl, authUrl string, tokenKey string) APIClient {
+func NewApiClient(ctx context.Context, loc *time.Location, cache *cache.RedisCache, logger *slog.Logger, baseUrl, authUrl string) APIClient {
 	return APIClient{
-		ctx:      ctx,
-		client:   &http.Client{},
-		cache:    cache,
-		baseUrl:  baseUrl,
-		authUrl:  authUrl,
-		logger:   logger,
-		loc:      loc,
-		tokenKey: tokenKey,
+		ctx:     ctx,
+		client:  &http.Client{},
+		cache:   cache,
+		baseUrl: baseUrl,
+		authUrl: authUrl,
+		logger:  logger,
+		loc:     loc,
 	}
 }
 
@@ -104,9 +102,9 @@ func (a APIClient) deserialize(src io.Reader, dst any) error {
 	return nil
 }
 
-func (a APIClient) Auth(id, client string, expire bool, privateKey string) (string, error) {
+func (a APIClient) Auth(id, client string, expire bool, privateKey string, redisKey string) (string, error) {
 	if !expire {
-		token, err := a.cache.GetToken(a.tokenKey)
+		token, err := a.cache.GetToken(redisKey)
 		if err == nil && token != "" {
 			return "Bearer " + token, nil
 		}
@@ -172,7 +170,7 @@ func (a APIClient) Auth(id, client string, expire bool, privateKey string) (stri
 	expDate := time.Now().In(a.loc).Add(config.REDIS_TOKEN_EXP)
 	expDateStr := expDate.String()
 
-	err = a.cache.SetTokenExp(a.tokenKey, token, expDateStr, expDate)
+	err = a.cache.SetTokenExp(redisKey, token, expDateStr, expDate)
 	if err != nil {
 		helpers.LogError(a.ctx, a.logger, a.loc, "api client", "", "Erro ao salvar token no redis", err.Error(), nil)
 	}

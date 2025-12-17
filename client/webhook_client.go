@@ -18,7 +18,7 @@ type WebhookClient struct {
 }
 
 func NewWebhookClient(ctx context.Context, loc *time.Location, logger *slog.Logger) *WebhookClient {
-	return &WebhookClient{APIClient: NewApiClient(ctx, loc, nil, logger, "", "", "")}
+	return &WebhookClient{APIClient: NewApiClient(ctx, loc, nil, logger, "", "")}
 
 }
 

@@ -14,17 +14,16 @@ import (
 )
 
 // Representa um cliente que realiza operações referentes a propostas de empréstimo na API externa.É composto por APICLient.
-type CreditoPessoalClient struct {
+type CobrancaClient struct {
 	APIClient
-	ccbUrl string
 }
 
-func NewCreditoPessoalClient(ctx context.Context, loc *time.Location, cache *cache.RedisCache, logger *slog.Logger, baseUrl, authUrl, ccbUrl, tokenKey string) *CreditoPessoalClient {
-	return &CreditoPessoalClient{NewApiClient(ctx, loc, cache, logger, baseUrl, authUrl, tokenKey), ccbUrl}
+func NewCobrancaClient(ctx context.Context, loc *time.Location, cache *cache.RedisCache, logger *slog.Logger, baseUrl, authUrl string) *CobrancaClient {
+	return &CobrancaClient{NewApiClient(ctx, loc, cache, logger, baseUrl, authUrl)}
 
 }
 
-func (c *CreditoPessoalClient) GerarCobrancaParcela(payload models.CobrancaUnicaInput, token string, idempotencyKey string) (models.GerarCobrancaResponse, int, string, error) {
+func (c *CobrancaClient) GerarCobrancaParcela(payload models.CobrancaUnicaInput, token string, idempotencyKey string) (models.GerarCobrancaResponse, int, string, error) {
 	url := fmt.Sprintf("%s/%s", c.baseUrl, "AgendaRecebivel/GerarUnicaCobranca")
 
 	req, err := c.newRequest(http.MethodPost, url, payload)
@@ -43,7 +42,6 @@ func (c *CreditoPessoalClient) GerarCobrancaParcela(payload models.CobrancaUnica
 	rawBody, _ := io.ReadAll(resp.Body)
 	var APIErr models.APIError
 	json.Unmarshal(rawBody, &APIErr)
-
 	if resp.StatusCode != 200 {
 		var status string
 		switch resp.StatusCode {
@@ -71,7 +69,7 @@ func (c *CreditoPessoalClient) GerarCobrancaParcela(payload models.CobrancaUnica
 
 }
 
-func (c *CreditoPessoalClient) GerarCobrancaParcelasMultiplas(payload models.MultiplasCobrancasInput, token string, idempotencyKey string) (models.GerarCobrancaResponse, int, string, error) {
+func (c *CobrancaClient) GerarCobrancaParcelasMultiplas(payload models.MultiplasCobrancasInput, token string, idempotencyKey string) (models.GerarCobrancaResponse, int, string, error) {
 
 	url := fmt.Sprintf("%s/%s", c.baseUrl, "AgendaRecebivel/GerarMultiplasCobrancas")
 
@@ -122,7 +120,7 @@ func (c *CreditoPessoalClient) GerarCobrancaParcelasMultiplas(payload models.Mul
 
 }
 
-func (c *CreditoPessoalClient) CancelarCobranca(payload models.CancelarCobrancaInput, token string, idempotencyKey string) (any, int, string, error) {
+func (c *CobrancaClient) CancelarCobranca(payload models.CancelarCobrancaInput, token string, idempotencyKey string) (any, int, string, error) {
 	url := fmt.Sprintf("%s/%s", c.baseUrl, "AgendaRecebivel/CancelarCobrancas")
 
 	req, err := c.newRequest(http.MethodPost, url, payload)
@@ -170,7 +168,7 @@ func (c *CreditoPessoalClient) CancelarCobranca(payload models.CancelarCobrancaI
 
 }
 
-func (c *CreditoPessoalClient) ConsultarCobranca(payload models.ConsultarDetalhesInput, token string, idempotencyKey string) (models.ConsultaCobrancaResponse, int, string, error) {
+func (c *CobrancaClient) ConsultarCobranca(payload models.ConsultarDetalhesInput, token string, idempotencyKey string) (models.ConsultaCobrancaResponse, int, string, error) {
 	url := fmt.Sprintf("%s/%s", c.baseUrl, "AgendaRecebivel/ConsultarDetalhes")
 
 	req, err := c.newRequest(http.MethodPost, url, payload)
@@ -225,7 +223,7 @@ func (c *CreditoPessoalClient) ConsultarCobranca(payload models.ConsultarDetalhe
 }
 
 // Busca propostas na API do BMP por ID ou código de proposta.
-func (c *CreditoPessoalClient) BuscarProposta(param models.BuscarProposta, token, idempotencyKey string) (models.PropostaAPIResponse, string, int, error) {
+func (c *CobrancaClient) BuscarProposta(param models.BuscarProposta, token, idempotencyKey string) (models.PropostaAPIResponse, string, int, error) {
 	url := fmt.Sprintf("%s/%s", c.baseUrl, "Proposta/Consultar")
 	var dto = models.DTO{Dto: param}
 	req, err := c.newRequest(http.MethodPost, url, dto)

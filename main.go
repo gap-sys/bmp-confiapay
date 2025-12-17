@@ -137,12 +137,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Erro ao se conectar ao Redis: %s", err.Error())
 	}
-	if err := redis.SetSubscriber(); err != nil {
+	/*if err := redis.SetSubscriber(); err != nil {
 		log.Fatalf("Erro ao setar subscriber no Redis: %s", err.Error())
 
 	}
 
-	go redis.Consume()
+	go redis.Consume()*/
 	defer redis.Close()
 
 	//Instanciando serviços de webhook
@@ -150,14 +150,14 @@ func main() {
 	webhookService := service.NewWebhookService(webhookClient, loc)
 
 	//Instanciando clients que serão utilizado pelos services que precisam chamar a API do BMP.
-	creditoPessoalClient := client.NewCreditoPessoalClient(ctx, loc, redis, clientLogger, config.BASE_URL, config.AUTH_URL, config.CCB_URL, "bmp-insscp-cached-token")
+	cobrancaClient := client.NewCobrancaClient(ctx, loc, redis, clientLogger, config.BASE_URL, config.AUTH_URL)
 
 	//Instanciando serviços de cobrança
-	creditoPessoalCobrancaService := service.NewCobrancaService(ctx, elegibilidadeServiceLogger, loc, creditoPessoalClient, webhookService, redis)
+	cobrancaService := service.NewCobrancaService(ctx, elegibilidadeServiceLogger, loc, cobrancaClient, webhookService, redis)
 
 	rmq, err := queue.NewRMQ(
 		ctx, loc, redis, rmqLogger,
-		webhookService, creditoPessoalCobrancaService,
+		webhookService, cobrancaService,
 		config.RABBITMQ_QOS)
 
 	if err != nil {
@@ -171,7 +171,7 @@ func main() {
 
 	//Instanciando os controllers
 	healthChecker := monitoring.NewServicesHealthChecker(rmq, redis)
-	cobrancaController := handlers.NewCobrancaCreditoPessoalController(redis, webhookService, loc)
+	cobrancaController := handlers.NewCobrancaCreditoPessoalController(redis, cobrancaService, webhookService, loc)
 	configController := handlers.NewConfigController(rmq, nil, nil)
 	monitoringControllers := handlers.NewMonitoringController(loc, nil, nil, healthChecker, redis, rmq)
 

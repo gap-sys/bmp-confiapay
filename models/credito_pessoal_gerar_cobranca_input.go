@@ -1,5 +1,7 @@
 package models
 
+import "cobranca-bmp/helpers"
+
 type MultiplasCobrancasInput struct {
 	Dto                          DtoCobranca                  `json:"dto"`
 	DtoGerarMultiplasLiquidacoes DtoGerarMultiplasLiquidacoes `json:"dtoGerarMultiplasLiquidacoes"`
@@ -13,9 +15,34 @@ type CobrancaUnicaInput struct {
 
 type CobrancaUnicaFrontendInput struct {
 	CobrancaUnicaInput
-	NumeroCCB  int
-	UrlWebhook string
-	IdCOnvenio int
+	NumeroCCB  int    `json:"numeroCCB" validate:"required"`
+	UrlWebhook string `json:"urlWebhook" validate:"required,url,ping"`
+	IdCOnvenio int    `json:"idConvenio" validate:"required,oneof=2 3 5"`
+}
+
+func (c CobrancaUnicaFrontendInput) Validate() error {
+	var APIError APIError
+	var messages = make([]APIMessage, 0)
+	err := helpers.StructValidate(c, "ping")
+	if err != nil {
+		errValidation, ok := err.(*helpers.ErrValidation)
+		if ok {
+			for _, msg := range errValidation.GetAllMessages() {
+				messages = append(messages, APIMessage{
+					Description: msg,
+				})
+				APIError.Msg += msg + " \n"
+			}
+
+			APIError.Messages = messages
+			APIError.HasError = true
+			err = APIError
+		}
+		return err
+	}
+
+	return nil
+
 }
 
 type DtoCobranca struct {

@@ -15,34 +15,33 @@ import (
 // RabbitMQ é a struct que contém as configurações e canais do RabbitMQ.
 
 type RabbitMQ struct {
-	ctx                           context.Context
-	conn                          *amqp.Connection
-	exchange                      string
-	dlqExchange                   string
-	cobrancaCh                    *amqp.Channel
-	webhookCh                     *amqp.Channel
-	dbCh                          *amqp.Channel
-	DlqCh                         *amqp.Channel
-	webhookMsgs                   <-chan amqp.Delivery
-	dbMsgs                        <-chan amqp.Delivery
-	cobrancaCreditoPessoalMsgs    <-chan amqp.Delivery
-	cobrancaQueue                 string
-	webhookQueue                  string
-	dbqueue                       string
-	dlqQueue                      string
-	cobrancaCreditoPessoalService CobrancaCreditoPessoalService
-	webhookService                WebhookService
-	dbService                     dbService
-	QOS                           int
-	globalQOS                     bool
-	url                           string
-	errchan                       chan *amqp.Error
-	cache                         RedisPublisher
-	logger                        *slog.Logger
-	location                      *time.Location
-	baseProducer                  *producer
-	cobrancaProducer              *CreditoPessoalProducer
-	mu                            *sync.Mutex
+	ctx         context.Context
+	conn        *amqp.Connection
+	exchange    string
+	dlqExchange string
+	cobrancaCh  *amqp.Channel
+	webhookCh   *amqp.Channel
+	//dbCh                          *amqp.Channel
+	DlqCh       *amqp.Channel
+	webhookMsgs <-chan amqp.Delivery
+	//dbMsgs                        <-chan amqp.Delivery
+	cobrancaCreditoPessoalMsgs <-chan amqp.Delivery
+	cobrancaQueue              string
+	webhookQueue               string
+	dbqueue                    string
+	dlqQueue                   string
+	cobrancaService            CobrancaCreditoPessoalService
+	webhookService             WebhookService
+	QOS                        int
+	globalQOS                  bool
+	url                        string
+	errchan                    chan *amqp.Error
+	cache                      RedisPublisher
+	logger                     *slog.Logger
+	location                   *time.Location
+	baseProducer               *producer
+	cobrancaProducer           *CobrancaProducer
+	mu                         *sync.Mutex
 }
 
 // NewRMQ cria uma nova instância de RabbitMQ.
@@ -64,26 +63,26 @@ type RabbitMQ struct {
 func NewRMQ(ctx context.Context, loc *time.Location, cache RedisPublisher,
 	logger *slog.Logger,
 	webhookService WebhookService,
-	cobrancaCreditoPessoalService CobrancaCreditoPessoalService,
+	cobrancaService CobrancaCreditoPessoalService,
 	QOS int) (*RabbitMQ, error) {
 
 	var rmq = &RabbitMQ{
-		ctx:                           ctx,
-		cache:                         cache,
-		location:                      loc,
-		errchan:                       make(chan *amqp.Error),
-		cobrancaQueue:                 config.COBRANCA_QUEUE,
-		dlqQueue:                      config.DIGTACAO_QUEUE_DLQ,
-		dbqueue:                       config.DB_QUEUE,
-		webhookQueue:                  config.WEBHOOK_QUEUE,
-		url:                           config.RABBITMQ_URL,
-		exchange:                      config.BMP_EXCHANGE,
-		dlqExchange:                   config.DLQ_EXCHANGE,
-		webhookService:                webhookService,
-		cobrancaCreditoPessoalService: cobrancaCreditoPessoalService,
-		QOS:                           QOS,
-		logger:                        logger,
-		mu:                            &sync.Mutex{},
+		ctx:             ctx,
+		cache:           cache,
+		location:        loc,
+		errchan:         make(chan *amqp.Error),
+		cobrancaQueue:   config.COBRANCA_QUEUE,
+		dlqQueue:        config.DIGTACAO_QUEUE_DLQ,
+		dbqueue:         config.DB_QUEUE,
+		webhookQueue:    config.WEBHOOK_QUEUE,
+		url:             config.RABBITMQ_URL,
+		exchange:        config.BMP_EXCHANGE,
+		dlqExchange:     config.DLQ_EXCHANGE,
+		webhookService:  webhookService,
+		cobrancaService: cobrancaService,
+		QOS:             QOS,
+		logger:          logger,
+		mu:              &sync.Mutex{},
 	}
 
 	//Se conectando ao RabbitMQ
@@ -123,15 +122,15 @@ func NewRMQ(ctx context.Context, loc *time.Location, cache RedisPublisher,
 // Injetando o Producer nos services, para que eles possam gravar mensagens nas filas.
 func (r *RabbitMQ) injectProducer() error {
 
-	if err := r.dbService.SetProducer(r.baseProducer); err != nil {
+	/*if err := r.dbService.SetProducer(r.baseProducer); err != nil {
 		return err
-	}
+	}*/
 
 	if err := r.webhookService.SetProducer(r.baseProducer); err != nil {
 		return err
 	}
 
-	if err := r.cobrancaCreditoPessoalService.SetProducer(r.cobrancaProducer); err != nil {
+	if err := r.cobrancaService.SetProducer(r.cobrancaProducer); err != nil {
 		return err
 	}
 	return nil
@@ -197,7 +196,8 @@ func (r *RabbitMQ) declareQueues() error {
 	if err != nil {
 		return err
 	}
-	_, err = r.dbCh.QueueDeclare(r.dbqueue, true, false, false, false, nil)
+
+	/*_, err = r.dbCh.QueueDeclare(r.dbqueue, true, false, false, false, nil)
 	if err != nil {
 		return err
 	}
@@ -205,7 +205,7 @@ func (r *RabbitMQ) declareQueues() error {
 	err = r.dbCh.QueueBind(r.dbqueue, r.dbqueue, r.exchange, false, nil)
 	if err != nil {
 		return err
-	}
+	} */
 
 	_, err = r.DlqCh.QueueDeclare(r.dlqQueue, true, false, false, false, nil)
 	if err != nil {
@@ -294,10 +294,10 @@ func (r *RabbitMQ) MonitoreServer() {
 // Encerra a conexão com o rabbitmq
 func (r *RabbitMQ) Close() error {
 
-	if err := r.dbCh.Close(); err != nil {
+	/*if err := r.dbCh.Close(); err != nil {
 		helpers.LogError(r.ctx, r.logger, r.location, "rabbitmq-close", "", "falha ao fechar canal de db", err.Error(), nil)
 		return err
-	}
+	}*/
 	helpers.LogInfo(r.ctx, r.logger, r.location, "rabbitmq-close", "", "canal de db fechado", nil)
 
 	helpers.LogInfo(r.ctx, r.logger, r.location, "rabbitmq-close", "", "canal de simulacao dlq fechado", nil)
@@ -331,12 +331,12 @@ func (r *RabbitMQ) Check() (map[string]any, error) {
 		errors = append(errors, "conexão fechada com o Rabbitmq")
 	}
 
-	if r.dbCh.IsClosed() {
+	/*if r.dbCh.IsClosed() {
 		errors = append(errors, "canal de db fechado")
 		globalChInfo["DB"] = "fechado"
 	} else {
 		globalChInfo["DB"] = "ok"
-	}
+	}*/
 
 	if r.DlqCh.IsClosed() {
 		globalChInfo["Digitacao DLQ"] = "fechado"

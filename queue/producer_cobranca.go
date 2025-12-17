@@ -10,8 +10,8 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-// CreditoPessoalProducer é a struct que contém as configurações e canais do producer CreditoPessoal.
-type CreditoPessoalProducer struct {
+// CobrancaProducer é a struct que contém as configurações e canais do producer CreditoPessoal.
+type CobrancaProducer struct {
 	producer
 	digitacaoCreditoPessoalCh       *amqp.Channel
 	simulacaoCreditoPessoalCh       *amqp.Channel
@@ -30,7 +30,7 @@ type CreditoPessoalProducer struct {
 // setUpCobrancaProducer configura os producers para as filas digitacaoCreditoPessoal, simulacaoCreditoPessoal, cobrancaCreditoPessoal, cancelamentoCreditoPessoal, liberacaoCreditoPessoal, db e webhook.
 func setUpCobrancaProducer(rmq *RabbitMQ, p producer) {
 
-	rmq.cobrancaProducer = &CreditoPessoalProducer{
+	rmq.cobrancaProducer = &CobrancaProducer{
 		producer: p,
 
 		dbQueue:       rmq.dbqueue,
@@ -45,7 +45,7 @@ func setUpCobrancaProducer(rmq *RabbitMQ, p producer) {
 // queue é a fila onde a mensagem será produzida.
 // data é o dado a ser produzido.
 // delay é o delay em milissegundos.
-func (c *CreditoPessoalProducer) Produce(queue string, data any, delay time.Duration) error {
+func (c *CobrancaProducer) Produce(queue string, data any, delay time.Duration) error {
 	body, err := json.Marshal(data)
 	// Se houver um erro ao serializar o json, envia para a DLQ
 	if err != nil {

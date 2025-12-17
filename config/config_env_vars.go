@@ -191,6 +191,7 @@ func InitializeEnvVar() error {
 	INSSCP_CLIENT_ID = os.Getenv("INSSCP_CLIENT_ID")
 	FGTS_JWT_KEY = os.Getenv("FGTS_JWT_KEY")
 	FGTS_CLIENT_ID = os.Getenv("FGTS_CLIENT_ID")
+	INSSCP_CLIENT_ID = os.Getenv("INSSCP_CLIENT_ID")
 	REDIS_URL = os.Getenv("REDIS_URL")
 	REDIS_DBCH = os.Getenv("REDIS_DBCH")
 	API_KEY = os.Getenv("API_KEY")
@@ -215,6 +216,7 @@ func InitializeEnvVar() error {
 	FINALIZAR_PROPOSTA_AUTH_ERROR = os.Getenv("FINALIZAR_PROPOSTA_AUTH_ERROR")
 	FINALIZAR_PROPOSTA_ERRO_PADRAO = os.Getenv("FINALIZAR_PROPOSTA_ERRO_PADRAO")
 	WEBHOOK_LIBERACAO_URL = os.Getenv("WEBHOOK_LIBERACAO_URL")
+	COBRANCA_QUEUE = os.Getenv("COBRANCA_QUEUE")
 
 	IPS = strings.Split(os.Getenv("IPS"), ",")
 

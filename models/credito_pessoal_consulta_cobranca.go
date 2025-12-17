@@ -97,6 +97,7 @@ type ConsultaCobrancaLancamento struct {
 type ConsultaCobrancaFrontEndInput struct {
 	BuscarPropostaDb
 	NumeroAcompanhamento string
+	Convenio             int
 	Parcelas             []int `json:"Parcelas"`
 }
 

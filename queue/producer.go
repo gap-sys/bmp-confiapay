@@ -41,10 +41,10 @@ type producer struct {
 func setUpProducers(rmq *RabbitMQ) {
 	var baseProducer = producer{
 
-		ctx:            rmq.ctx,
-		conn:           rmq.conn,
-		dlqCh:          rmq.DlqCh,
-		dbCh:           rmq.dbCh,
+		ctx:   rmq.ctx,
+		conn:  rmq.conn,
+		dlqCh: rmq.DlqCh,
+		//dbCh:           rmq.dbCh,
 		webhookCh:      rmq.webhookCh,
 		dbQueue:        rmq.dbqueue,
 		dlqExchange:    rmq.dlqExchange,
