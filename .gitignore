@@ -1,0 +1,8 @@
+.env
+main
+.marscode/*
+docker-compose.yml
+labelfile
+Dockerfile.prod
+.prod.env
+

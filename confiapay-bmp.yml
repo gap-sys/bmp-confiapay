@@ -1,0 +1,38 @@
+version: '3.7'
+
+services:
+  bmp_microservices:
+    image: sergiomsa/bmp:v1 # Substitua pela imagem no Docker Hub ou crie localmente
+    build:
+      context: .
+    ports:
+      - "8080" # Porta interna do contêiner
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1024M
+      labels:  
+        - traefik.enable=true
+        - traefik.http.routers.bmp_microservices.rule=Host(`bmp.Confiapay.com.br`)
+        - traefik.http.routers.bmp_microservices.entrypoints=websecure
+        - traefik.http.routers.bmp_microservices.tls.certresolver=letsencryptresolver
+        - traefik.http.services.bmp_microservices.loadbalancer.server.port=8080
+        - traefik.http.services.bmp_microservices.loadbalancer.passHostHeader=true
+        - traefik.http.routers.bmp_microservices.service=bmp_microservices
+    networks:
+      - network_swarm_public
+    environment:
+      - ENV_VAR_1=valor1
+      - ENV_VAR_2=valor2
+    restart: always
+
+networks:
+  network_swarm_public:
+    external: true
+    name: network_swarm_public
