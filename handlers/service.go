@@ -13,7 +13,7 @@ type TokenService interface {
 	GenerateToken(clientId, privateKey string) (string, string, error)
 }
 
-type CobrancaCreditoPessoalService interface {
+type CobrancaService interface {
 	//	Auth(key string, client string) (string, error)
 	ConsultarCobranca(payload models.ConsultarDetalhesInput, convenio int) (models.ConsultaCobrancaResponse, int, string, error)
 	Cobranca(payload models.CobrancaTaskData) (any, string, int, error)

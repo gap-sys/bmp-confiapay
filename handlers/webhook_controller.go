@@ -9,21 +9,21 @@ import (
 )
 
 type WebhookController struct {
-	logger                        *slog.Logger
-	location                      *time.Location
-	webhookService                WebhookService
-	cobrancaCreditoPessoalService CobrancaCreditoPessoalService
-	cache                         *cache.RedisCache
+	logger          *slog.Logger
+	location        *time.Location
+	webhookService  WebhookService
+	cobrancaService CobrancaService
+	cache           *cache.RedisCache
 }
 
 func NewWebhookController(logger *slog.Logger, cache *cache.RedisCache,
-	location *time.Location, webhookService WebhookService, cobrancaCreditoPessoalService CobrancaCreditoPessoalService,
+	location *time.Location, webhookService WebhookService, cobrancaCreditoPessoalService CobrancaService,
 ) *WebhookController {
 	return &WebhookController{
-		location:                      location,
-		logger:                        logger,
-		webhookService:                webhookService,
-		cobrancaCreditoPessoalService: cobrancaCreditoPessoalService,
+		location:        location,
+		logger:          logger,
+		webhookService:  webhookService,
+		cobrancaService: cobrancaCreditoPessoalService,
 
 		cache: cache,
 	}

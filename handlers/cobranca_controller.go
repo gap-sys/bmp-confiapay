@@ -13,12 +13,12 @@ import (
 
 type CobrancaCreditoPessoalController struct {
 	cache           *cache.RedisCache
-	cobrancaService CobrancaCreditoPessoalService
+	cobrancaService CobrancaService
 	loc             *time.Location
 	webhookService  WebhookService
 }
 
-func NewCobrancaCreditoPessoalController(cache *cache.RedisCache, service CobrancaCreditoPessoalService, webhookService WebhookService, loc *time.Location) *CobrancaCreditoPessoalController {
+func NewCobrancaCreditoPessoalController(cache *cache.RedisCache, service CobrancaService, webhookService WebhookService, loc *time.Location) *CobrancaCreditoPessoalController {
 	return &CobrancaCreditoPessoalController{
 		cache:           cache,
 		cobrancaService: service,
