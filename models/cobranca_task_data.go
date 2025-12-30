@@ -7,7 +7,6 @@ import (
 )
 
 type CobrancaTaskData struct {
-	Convenio               int                        `json:"convenio"`
 	IdProposta             int                        `json:"idProposta"`
 	WebhookUrl             string                     `json:"urlWebhook"`
 	IdempotencyKey         string                     `json:"idempotencyKey,omitempty"`
@@ -67,5 +66,5 @@ func (a *CobrancaTaskData) Validate() error {
 }
 
 func (c *CobrancaTaskData) GenIdempotencyKey(base int) {
-	c.IdempotencyKey = fmt.Sprintf("%d:%d:%d", base, c.IdProposta, time.Now().UnixNano())
+	c.IdempotencyKey = fmt.Sprintf("%d:%d:%d", base, c.IdProposta)
 }

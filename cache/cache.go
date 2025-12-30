@@ -218,7 +218,7 @@ func (r *RedisCache) Del(key string) error {
 }
 
 func (r *RedisCache) GenID() int {
-	//Gera um  id pelo Redis. Este número formará a idempotencyKey com o id das simulações
+	/*//Gera um  id pelo Redis. Este número formará a idempotencyKey com o id das simulações
 	id, err := r.client.Incr(r.ctx, "IdempotencyKey").Result()
 	if err != nil {
 		helpers.LogError(r.ctx, r.logger, r.loc, "redis", "", "Erro ao obter ID único", err.Error(), nil)
@@ -226,7 +226,8 @@ func (r *RedisCache) GenID() int {
 		r.client.Set(r.ctx, "IdempotencyKey", newID+1, 0)
 		return newID
 	}
-	return int(id)
+	return int(id)*/
+	return int(time.Now().In(r.loc).UnixNano())
 
 }
 
