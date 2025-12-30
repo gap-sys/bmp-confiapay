@@ -18,7 +18,6 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 		var headers = c.Request().Header.String()
 
 		var resp any
-		var parcelas = make([]int, 0)
 
 		apiKey := c.Get("Api-Key")
 		if apiKey == "" {
@@ -80,32 +79,38 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 
 				case
 					0:
-					var geracaoAgenda models.EventoGeracaoAgenda
-					json.Unmarshal(rawBody, &geracaoAgenda)
-					bodyProcessed = true
 
-					for _, p := range geracaoAgenda.Parcelas {
-						parcelas = append(parcelas, p.NroParcela)
+					/*
+						var geracaoAgenda models.EventoGeracaoAgenda
+						json.Unmarshal(rawBody, &geracaoAgenda)
+						bodyProcessed = true
 
-					}
+						for _, p := range geracaoAgenda.Parcelas {
+							parcelas = append(parcelas, p.NroParcela)
+
+						}*/
 
 				case 1:
-					var cancelamento models.EventoCancelamentoAgenda
-					json.Unmarshal(rawBody, &cancelamento)
-					SearchMode = "liquidacao"
-					bodyProcessed = true
+					/*
+						var cancelamento models.EventoCancelamentoAgenda
+						json.Unmarshal(rawBody, &cancelamento)
+						SearchMode = "liquidacao"
+						bodyProcessed = true
+					*/
 
 					return
 
 				case 2:
-					var abatimento models.EventoAcrescimoAbatimento
-					json.Unmarshal(rawBody, &abatimento)
-					SearchMode = "parcela"
-					bodyProcessed = true
+					/*
+						var abatimento models.EventoAcrescimoAbatimento
+						json.Unmarshal(rawBody, &abatimento)
+						SearchMode = "parcela"
+						bodyProcessed = true
+					*/
 
 					return
 
-				case 3:
+				case 3: //Parcela paga
 					var lancamento models.EventoLancamentoParcela
 					json.Unmarshal(rawBody, &lancamento)
 					SearchMode = "parcela"
@@ -114,20 +119,25 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					return
 
 				case 4:
-					var prorrogacao models.EventoProrrogacaoVencimento
-					json.Unmarshal(rawBody, &prorrogacao)
-					SearchMode = "parcela"
-					bodyProcessed = true
+					/*
+						var prorrogacao models.EventoProrrogacaoVencimento
+						json.Unmarshal(rawBody, &prorrogacao)
+						SearchMode = "parcela"
+						bodyProcessed = true
+					*/
 
 					return
 
 				case 5:
-					var geracaoBoleto models.EventoGeracaoBoleto
-					json.Unmarshal(rawBody, &geracaoBoleto)
-					SearchMode = "data_vencimento"
-					bodyProcessed = true
+					/*
+						var geracaoBoleto models.EventoGeracaoBoleto
+						json.Unmarshal(rawBody, &geracaoBoleto)
+						SearchMode = "data_vencimento"
+						bodyProcessed = true
+					*/
+					return
 
-				case 6:
+				case 6: //Cancelamento de boleto
 					var cancelamento models.EventoCancelamentoBoleto
 					json.Unmarshal(rawBody, &cancelamento)
 					SearchMode = "parcelas"
@@ -136,21 +146,23 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					return
 
 				case 7:
-					var liquidacao models.EventoLiquidacaoAgenda
-					json.Unmarshal(rawBody, &liquidacao)
-					SearchMode = "liquidacao"
-					bodyProcessed = true
+					/*
+						var liquidacao models.EventoLiquidacaoAgenda
+						json.Unmarshal(rawBody, &liquidacao)
+						SearchMode = "liquidacao"
+						bodyProcessed = true
+					*/
 
 					return
 
-				case 8:
+				case 8: //Registro de cobrança
 					var registroCobranca models.EventoRegistroCobranca
 					json.Unmarshal(rawBody, &registroCobranca)
 					helpers.LogError(c.Context(), w.logger, w.location, "webhook cobranças", "", "Não foi possível encontrar parcela", nil, input)
 
 					bodyProcessed = true
 
-				case 9:
+				case 9: //Cancelamento de pix
 					var cancelamento models.EventoCancelamentoCobranca
 					json.Unmarshal(rawBody, &cancelamento)
 					SearchMode = "parcelas"
@@ -159,11 +171,13 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					return
 
 				case 10:
-					var estorno models.EventoEstorno
-					json.Unmarshal(rawBody, &estorno)
-					helpers.LogError(c.Context(), w.logger, w.location, "webhook cobranças", "", "Não foi possível encontrar parcela", nil, input)
+					/*
+						var estorno models.EventoEstorno
+						json.Unmarshal(rawBody, &estorno)
+						helpers.LogError(c.Context(), w.logger, w.location, "webhook cobranças", "", "Não foi possível encontrar parcela", nil, input)
 
-					bodyProcessed = true
+						bodyProcessed = true*/
+					return
 
 				default:
 					bodyProcessed = false
@@ -183,7 +197,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 						Contexto: "webhook cobranças",
 						Time:     time.Now().In(w.location),
 					}
-					helpers.LogError(context.Background(), w.logger, w.location, "webhook insscp", "", "Payload não identificado recebido no webhook", "Payload não identificado recebido no webhook", payload)
+					helpers.LogError(context.Background(), w.logger, w.location, "webhook cobrancas", "", "Payload não identificado recebido no webhook", "Payload não identificado recebido no webhook", payload)
 					w.webhookService.SendToDLQ(dlqData)
 					return
 				}

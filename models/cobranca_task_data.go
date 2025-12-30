@@ -7,22 +7,23 @@ import (
 )
 
 type CobrancaTaskData struct {
-	Convenio                   int           `json:"convenio"`
-	IdProposta                 int           `json:"idProposta"`
-	WebhookUrl                 string        `json:"urlWebhook"`
-	IdempotencyKey             string        `json:"idempotencyKey,omitempty"`
-	TimeoutRetries             int64         `json:"timeoutRetries"`
-	MultiplasCobrancas         bool          `json:"multiplasCobrancas"`
-	NumeroCCB                  int           `json:"numeroCCB"`
-	RateLimitRetries           int64         `json:"rateLimitRetries"`
-	TimeoutDelay               time.Duration `json:"timeoutDelay"`
-	CurrentDelay               time.Duration `json:"currentDelay"`
-	Token                      string        `json:"token,omitempty"`
-	UpdatePendenteCancelamento bool          `json:"pendenteCancelamento"`
-	NumeroAcompanhamento       string        `json:"numeroAcompanhamento"`
-	CobrancaUnicaFrontendInput CobrancaUnicaFrontendInput
-	CancelamentoCobranca       CancelarCobrancaInput `json:"cancelamentoCobranca"`
-	CalledAssync               bool                  `json:"calledAssync"`
+	Convenio                   int                        `json:"convenio"`
+	IdProposta                 int                        `json:"idProposta"`
+	WebhookUrl                 string                     `json:"urlWebhook"`
+	IdempotencyKey             string                     `json:"idempotencyKey,omitempty"`
+	TimeoutRetries             int64                      `json:"timeoutRetries"`
+	MultiplasCobrancas         bool                       `json:"multiplasCobrancas"`
+	TipoCobranca               int                        `json:"tipoCobranca"`
+	NumeroCCB                  int                        `json:"numeroCCB"`
+	RateLimitRetries           int64                      `json:"rateLimitRetries"`
+	TimeoutDelay               time.Duration              `json:"timeoutDelay"`
+	CurrentDelay               time.Duration              `json:"currentDelay"`
+	Token                      string                     `json:"token,omitempty"`
+	UpdatePendenteCancelamento bool                       `json:"pendenteCancelamento"`
+	NumeroAcompanhamento       string                     `json:"numeroAcompanhamento"`
+	GerarCobrancaInput         GerarCobrancaFrontendInput `json:"gerarCobrancaInput"`
+	CancelamentoCobranca       CancelarCobrancaInput      `json:"cancelamentoCobranca"`
+	CalledAssync               bool                       `json:"calledAssync"`
 }
 
 func NewCobrancaTastkData(idempotencyKey, idEsteira int, IdProposta int, numeroAcompanhamento string) CobrancaTaskData {

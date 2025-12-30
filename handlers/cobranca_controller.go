@@ -52,7 +52,7 @@ func (a *CobrancaCreditoPessoalController) Route(r fiber.Router) {
 //	@Router			/cobranca/geracao [post]
 func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var input models.CobrancaUnicaFrontendInput
+		var input models.GerarCobrancaFrontendInput
 
 		err := c.BodyParser(&input)
 		if err != nil {
@@ -63,12 +63,11 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
 		}
 
-		IdProposta, _ := strconv.Atoi(input.Dto.CodigoOperacao)
-
-		var payload = models.NewCobrancaTastkData(a.cache.GenID(), 1, IdProposta, input.Dto.CodigoProposta)
+		var payload = models.NewCobrancaTastkData(a.cache.GenID(), 1, input.IdProposta, input.NumeroAcompanhamento)
 		payload.WebhookUrl = input.UrlWebhook
-		payload.Convenio = input.IdCOnvenio
-		payload.CobrancaUnicaFrontendInput = input
+		payload.Token = input.Token
+
+		payload.GerarCobrancaInput = input
 
 		if err := payload.Validate(); err != nil {
 			return c.Status(422).JSON(err)
@@ -83,7 +82,6 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 		}
 
 		return c.Status(statusCode).JSON(data)
-
 	}
 }
 
@@ -170,7 +168,7 @@ func (a *CobrancaCreditoPessoalController) ConsultarCobrancas() fiber.Handler {
 				TrazerBoleto:          true,
 				TrazerAgendaDetalhada: true,
 			},
-		}, input.Convenio)
+		}, "")
 
 		if err != nil {
 			return c.Status(statusCode).JSON(err)

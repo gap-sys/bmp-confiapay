@@ -77,6 +77,11 @@ var (
 )
 
 var (
+	TIPO_COBRANCA_PIX       = 3
+	TIPO_COBRANCA_BOLETOPIX = 7
+)
+
+var (
 	RABBITMQ_URL           string
 	RABBITMQ_QOS           int
 	RABBITMQ_SIMULACAO_QOS int
