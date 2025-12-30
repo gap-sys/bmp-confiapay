@@ -77,8 +77,11 @@ var (
 )
 
 var (
-	TIPO_COBRANCA_PIX       = 3
-	TIPO_COBRANCA_BOLETOPIX = 7
+	TIPO_COBRANCA_PIX         = 3
+	TIPO_COBRANCA_BOLETOPIX   = 7
+	STATUS_CONSULTAR_COBRANCA = "consultar_cobranca"
+	STATUS_GERAR_COBRANCA     = "gerar_cobranca"
+	STATUS_CANCELAR_COBRANCA  = "cancelar_cobranca"
 )
 
 var (

@@ -63,7 +63,7 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
 		}
 
-		var payload = models.NewCobrancaTastkData(a.cache.GenID(), 1, input.IdProposta, input.NumeroAcompanhamento)
+		var payload = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_GERAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento)
 		payload.WebhookUrl = input.UrlWebhook
 		payload.Token = input.Token
 
@@ -120,7 +120,7 @@ func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 			},
 		}
 
-		var cancelamentoTaskData = models.NewCobrancaTastkData(a.cache.GenID(), 1, input.IdProposta, input.NumeroAcompanhamento)
+		var cancelamentoTaskData = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_CANCELAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento)
 		cancelamentoTaskData.CancelamentoCobranca = bmpPayload
 
 		data, _, statusCode, err := a.cobrancaService.CancelarCobranca(cancelamentoTaskData)
@@ -159,16 +159,20 @@ func (a *CobrancaCreditoPessoalController) ConsultarCobrancas() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
 		}
 
-		data, statusCode, _, err := a.cobrancaService.ConsultarCobranca(models.ConsultarDetalhesInput{
-			DTO: models.DtoCobranca{CodigoProposta: input.NumeroAcompanhamento,
-				CodigoOperacao: strconv.Itoa(input.IdProposta),
-				NroParcelas:    input.Parcelas,
-			},
-			DTOConsultaDetalhes: models.DTOConsultaDetalhes{
-				TrazerBoleto:          true,
-				TrazerAgendaDetalhada: true,
-			},
-		}, "")
+		consultaTaskData := models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_CONSULTAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento)
+		consultaTaskData.ConsultarCobrancaInput =
+			models.ConsultarDetalhesInput{
+				DTO: models.DtoCobranca{CodigoProposta: input.NumeroAcompanhamento,
+					CodigoOperacao: strconv.Itoa(input.IdProposta),
+					NroParcelas:    input.Parcelas,
+				},
+				DTOConsultaDetalhes: models.DTOConsultaDetalhes{
+					TrazerBoleto:          true,
+					TrazerAgendaDetalhada: true,
+				},
+			}
+
+		data, _, statusCode, err := a.cobrancaService.ConsultarCobranca(consultaTaskData)
 
 		if err != nil {
 			return c.Status(statusCode).JSON(err)

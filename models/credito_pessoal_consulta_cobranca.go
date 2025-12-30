@@ -44,7 +44,7 @@ type ConsultaCobrancaParcela struct {
 	VlrDesconto       float64                      `json:"vlrDesconto"`
 	DtVencimentoAtual string                       `json:"dtVencimentoAtual"`
 	Boletos           []ConsultaBoleto             `json:"boletos"`
-	Pix               []ConsultaBoletoPix          `json:"pix"`
+	Pix               []ConsultaPix                `json:"pix"`
 	Lancamentos       []ConsultaCobrancaLancamento `json:"lancamentos"`
 }
 
@@ -66,7 +66,7 @@ type ConsultaBoletoQrCode struct {
 	Imagem string `json:"imagem"`
 }
 
-type ConsultaBoletoPix struct {
+type ConsultaPix struct {
 	Liquidacao   bool   `json:"liquidacao"`
 	DtCredito    string `json:"dtCredito"`
 	DtVencimento string `json:"dtVencimento"`

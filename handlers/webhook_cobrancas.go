@@ -158,8 +158,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 				case 8: //Registro de cobrança
 					var registroCobranca models.EventoRegistroCobranca
 					json.Unmarshal(rawBody, &registroCobranca)
-					helpers.LogError(c.Context(), w.logger, w.location, "webhook cobranças", "", "Não foi possível encontrar parcela", nil, input)
-
+					//helpers.LogError(c.Context(), w.logger, w.location, "webhook cobranças", "", "Não foi possível encontrar parcela", nil, input
 					bodyProcessed = true
 
 				case 9: //Cancelamento de pix

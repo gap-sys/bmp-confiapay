@@ -15,7 +15,7 @@ type TokenService interface {
 
 type CobrancaService interface {
 	//	Auth(key string, client string) (string, error)
-	ConsultarCobranca(payload models.ConsultarDetalhesInput, token string) (models.ConsultaCobrancaResponse, int, string, error)
+	ConsultarCobranca(payload models.CobrancaTaskData) (models.ConsultaCobrancaResponse, string, int, error)
 	Cobranca(payload models.CobrancaTaskData) (any, string, int, error)
 	CancelarCobranca(payload models.CobrancaTaskData) (any, string, int, error)
 	SendToDLQ(data any) error

@@ -49,7 +49,16 @@ func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Loca
 }
 
 func (a *CobrancalService) Cobranca(payload models.CobrancaTaskData) (any, string, int, error) {
-	return a.GerarCobranca(&payload)
+	switch payload.Status {
+	case config.STATUS_CANCELAR_COBRANCA:
+		return a.CancelarCobranca(payload)
+	case config.STATUS_CONSULTAR_COBRANCA:
+		return a.ConsultarCobranca(payload)
+	case config.STATUS_GERAR_COBRANCA:
+		return a.GerarCobranca(&payload)
+
+	}
+	return nil, "", 500, errors.New("Status inválido")
 
 }
 
@@ -222,12 +231,11 @@ func (a *CobrancalService) CancelarCobranca(payload models.CobrancaTaskData) (an
 	return data, status, statusCode, nil
 }
 
-func (a *CobrancalService) ConsultarCobranca(payload models.ConsultarDetalhesInput, token string) (models.ConsultaCobrancaResponse, int, string, error) {
-	idempotencyKey := strconv.Itoa(a.cache.GenID())
-	data, statusCode, status, err := a.client.ConsultarCobranca(payload, token, idempotencyKey)
+func (a *CobrancalService) ConsultarCobranca(payload models.CobrancaTaskData) (models.ConsultaCobrancaResponse, string, int, error) {
+	data, statusCode, status, err := a.client.ConsultarCobranca(payload.ConsultarCobrancaInput, payload.Token, payload.IdempotencyKey)
 	if err != nil {
-		return data, statusCode, status, err
+		return data, status, statusCode, err
 	}
 
-	return data, statusCode, status, nil
+	return data, status, statusCode, nil
 }
