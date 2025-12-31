@@ -5,7 +5,7 @@ import (
 )
 
 type CobrancaClient interface {
-	Auth(key, client string, expire bool, privateKey, redisKey string) (string, error)
+	Auth(data models.AuthPayload) (string, error)
 	GerarCobrancaParcela(payload models.CobrancaUnicaInput, token string, idempotencyKey string) (models.GerarCobrancaResponse, int, string, error)
 	GerarCobrancaParcelasMultiplas(payload models.MultiplasCobrancasInput, token string, idempotencyKey string) (models.GerarCobrancaResponse, int, string, error)
 	CancelarCobranca(payload models.CancelarCobrancaInput, token string, idempotencyKey string) (any, int, string, error)

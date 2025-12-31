@@ -2,20 +2,14 @@ package client
 
 import (
 	"bytes"
-	"cobranca-bmp/auth"
 	"cobranca-bmp/cache"
-	"cobranca-bmp/config"
 	"cobranca-bmp/helpers"
 	"cobranca-bmp/models"
 	"context"
 	"encoding/json"
-	"errors"
 	"io"
 	"log/slog"
 	"net/http"
-	"net/url"
-	"os"
-	"strings"
 	"time"
 )
 
@@ -102,78 +96,49 @@ func (a APIClient) deserialize(src io.Reader, dst any) error {
 	return nil
 }
 
-func (a APIClient) Auth(id, client string, expire bool, privateKey string, redisKey string) (string, error) {
-	if !expire {
-		token, err := a.cache.GetToken(redisKey)
-		if err == nil && token != "" {
-			return "Bearer " + token, nil
-		}
+func (a APIClient) Auth(data models.AuthPayload) (string, error) {
+	var cred = map[string]int{
+		"idConvenio":       data.IdConvenio,
+		"idSecuritizadora": data.IdSecuritizadora,
 	}
 
-	jwt, err := auth.GenerateToken(id, client, config.JWT_AUD, privateKey)
+	req, err := a.newRequest("POST", a.authUrl, cred)
 	if err != nil {
-		helpers.LogError(a.ctx, a.logger, a.loc, "api client", "", "Erro ao gerar token jwt", err.Error(), nil)
-		return "", err
+		return "", models.NewAPIError("", err.Error(), data.Id)
 	}
 
-	addr := os.Getenv("AUTH_URL")
-	body := url.Values{}
-	body.Set("client_id", "client_id")
-	body.Set("grant_type", "client_credentials")
-	//body.Set("client_id", client)
-	body.Set("scope", "bmp.digital.api.full.access")
-	body.Set("client_assertion", jwt)
-	body.Set("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-	reqBody := body.Encode()
-
-	req, err := http.NewRequest(http.MethodPost, addr, strings.NewReader(reqBody))
-	if err != nil {
-		helpers.LogError(a.ctx, a.logger, a.loc, "api client", "", "Erro ao criar requisição de autenticação", err.Error(), nil)
-		return "", err
-	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Cache-Control", "no-cache")
-	//helpers.LogInfo(a.ctx, a.logger, a.loc, "api client", "api client", "Requisitando para: "+addr, nil)
 	resp, err := a.doRequest(req)
 	if err != nil {
-		helpers.LogError(a.ctx, a.logger, a.loc, "api client", "", "Erro ao realizar requisição de autenticação", err.Error(), nil)
-		return "", err
+		return "", models.NewAPIError("", err.Error(), data.Id)
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		var data models.APIError
-		if err := a.deserialize(resp.Body, &data); err != nil {
-			return "", err
+		var apiErr models.APIError
+		if err := a.deserialize(resp.Body, &apiErr); err != nil {
+			return "", models.NewAPIError("", err.Error(), data.Id)
 
 		}
-		if data.Msg == "" {
-			data.Msg = "erro ao se autenticar na API do BMP"
+
+		apiErr.HasError = true
+		if apiErr.Msg == "" {
+			apiErr.Msg = "Não foi possível obter token"
 		}
-
-		return "", data
-	}
-
-	var data map[string]any
-
-	if err := a.deserialize(resp.Body, &data); err != nil {
-		return "", err
+		return "", apiErr
 
 	}
 
-	token, ok := data["access_token"].(string)
-	if !ok || token == "" {
-		helpers.LogError(a.ctx, a.logger, a.loc, "api client", "", "Token de acesso não encontrado", "", nil)
-		return "", errors.New("token de acesso não encontrado")
-	}
-	expDate := time.Now().In(a.loc).Add(config.REDIS_TOKEN_EXP)
-	expDateStr := expDate.String()
+	var respBody map[string]string
 
-	err = a.cache.SetTokenExp(redisKey, token, expDateStr, expDate)
-	if err != nil {
-		helpers.LogError(a.ctx, a.logger, a.loc, "api client", "", "Erro ao salvar token no redis", err.Error(), nil)
+	if err := a.deserialize(resp.Body, &respBody); err != nil {
+		return "", models.NewAPIError("", err.Error(), data.Id)
+
 	}
 
-	return "Bearer " + token, nil
+	token, ok := respBody["token"]
+	if !ok {
+		return "", models.NewAPIError("", "Token não encontrado", data.Id)
+	}
+
+	return "BEARER " + token, nil
+
 }
