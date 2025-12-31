@@ -160,8 +160,7 @@ func main() {
 
 	//Instanciando serviços
 	updateService := service.NewUpdateService(dbLogger, loc, parcelaRepo)
-	cobrancaService := service.NewCobrancaService(ctx, elegibilidadeServiceLogger, loc, cobrancaClient, webhookService, redis, parcelaRepo, *updateService)
-
+	cobrancaService := service.NewCobrancaService(ctx, elegibilidadeServiceLogger, loc, cobrancaClient, webhookService, redis, parcelaRepo, updateService)
 	rmq, err := queue.NewRMQ(
 		ctx, loc, redis, rmqLogger,
 		webhookService, cobrancaService,

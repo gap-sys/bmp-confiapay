@@ -115,11 +115,6 @@ var (
 	WEBHOOK_DELAY         time.Duration
 	WEBHOOK_DIGITACAO_URL string
 	WEBHOOK_LIBERACAO_URL string
-
-	FGTS_CONVENIO                int
-	INSSCP_CONVENIO              int
-	CREDITO_PESSOAL_CONVENIO     int
-	CREDITO_TRABALHADOR_CONVENIO int
 )
 
 // Status de erro padrão JRPC
@@ -299,24 +294,8 @@ func InitializeEnvVar() error {
 	}
 	RABBITMQ_SIMULACAO_QOS = int(simulacaooQos)
 
-	FGTS_CONVENIO, err = strconv.Atoi(os.Getenv("FGTS_CONVENIO"))
-	if err != nil {
-		return err
-	}
-
-	INSSCP_CONVENIO, err = strconv.Atoi(os.Getenv("INSSCP_CONVENIO"))
-	if err != nil {
-		return err
-	}
-
-	CREDITO_PESSOAL_CONVENIO, err = strconv.Atoi(os.Getenv("CREDITO_PESSOAL_CONVENIO"))
-	if err != nil {
-		return err
-	}
-
-	CREDITO_TRABALHADOR_CONVENIO, err = strconv.Atoi(os.Getenv("CREDITO_TRABALHADOR_CONVENIO"))
-	if err != nil {
-		return err
+	if HOMOLOG_LOCAL {
+		setLocalHomologVars()
 	}
 
 	return nil

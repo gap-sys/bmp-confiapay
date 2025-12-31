@@ -102,8 +102,10 @@ func (a *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 	}
 
 	a.updateService.UpdateGeracaoParcela(models.UpdateDbData{
-		GeracaoParcela: &payload.GerarCobrancaInput,
-	})
+		GeracaoParcela:   &payload.GerarCobrancaInput,
+		CodigoLiquidacao: data.Cobrancas[0].CodigoLiquidacao,
+		Action:           "update_geracao",
+	}, false)
 
 	if payload.CalledAssync {
 		a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, data, "cobranca service"))
