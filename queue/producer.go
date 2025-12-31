@@ -15,7 +15,7 @@ import (
 )
 
 type RedisPublisher interface {
-	Publish(payload models.UpdateDBData) error
+	Publish(payload models.UpdateDbData) error
 }
 
 // producer é a struct que contém as configurações e canais do producer.
@@ -106,7 +106,7 @@ func (p *producer) Produce(queue string, data any, delay time.Duration) error {
 			}
 
 		}
-		redisPayload := data.(models.UpdateDBData)
+		redisPayload := data.(models.UpdateDbData)
 		p.redisPublisher.Publish(redisPayload)
 		return err
 

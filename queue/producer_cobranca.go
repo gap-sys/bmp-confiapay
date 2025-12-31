@@ -116,7 +116,7 @@ func (c *CobrancaProducer) Produce(queue string, data any, delay time.Duration) 
 					}
 
 				}
-				redisPayload := data.(models.UpdateDBData)
+				redisPayload := data.(models.UpdateDbData)
 				c.redisPublisher.Publish(redisPayload)
 				return err
 		*/

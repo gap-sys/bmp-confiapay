@@ -13,7 +13,7 @@ import (
 )
 
 type PropostaService interface {
-	UpdateAssync(data models.UpdateDBData) (bool, error)
+	UpdateAssync(data models.UpdateDbData) (bool, error)
 }
 
 // Representa um objeto que processa dados escritos em arquivos.
@@ -67,7 +67,7 @@ func (l *LogFileHander) Consume() {
 			continue
 		}
 
-		var payload models.UpdateDBData
+		var payload models.UpdateDbData
 		if err := json.Unmarshal(fileBytes, &payload); err != nil {
 			helpers.LogError(l.ctx, l.logger, l.location, "file log", "", "Erro ao desserializar arquivo de logs", err.Error(), nil)
 			continue

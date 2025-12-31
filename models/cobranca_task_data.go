@@ -20,13 +20,14 @@ type CobrancaTaskData struct {
 	Token                  string                     `json:"token,omitempty"`
 	Status                 string                     `json:"status"`
 	NumeroAcompanhamento   string                     `json:"numeroAcompanhamento"`
+	AuthPayload            AuthPayload                `json:"authPayload"`
 	GerarCobrancaInput     GerarCobrancaFrontendInput `json:"gerarCobrancaInput"`
 	CancelamentoCobranca   CancelarCobrancaInput      `json:"cancelamentoCobranca"`
 	ConsultarCobrancaInput ConsultarDetalhesInput     `json:"consultarCobrancaInput"`
 	CalledAssync           bool                       `json:"calledAssync"`
 }
 
-func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, numeroAcompanhamento string) CobrancaTaskData {
+func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, numeroAcompanhamento string, authPayload AuthPayload) CobrancaTaskData {
 	var c = CobrancaTaskData{
 		IdProposta:         IdProposta,
 		RateLimitRetries:   config.RATE_LIMIT_MAX_RETRIES,
@@ -34,6 +35,8 @@ func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, num
 		CurrentDelay:       0,
 		MultiplasCobrancas: false,
 		CalledAssync:       false,
+		AuthPayload:        authPayload,
+		Status:             status,
 	}
 	c.GenIdempotencyKey(idempotencyKey)
 
@@ -66,5 +69,5 @@ func (a *CobrancaTaskData) Validate() error {
 }
 
 func (c *CobrancaTaskData) GenIdempotencyKey(base int) {
-	c.IdempotencyKey = fmt.Sprintf("%d:%d:%d", base, c.IdProposta)
+	c.IdempotencyKey = fmt.Sprintf("%d:%d", base, c.IdProposta)
 }

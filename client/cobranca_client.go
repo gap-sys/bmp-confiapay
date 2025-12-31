@@ -246,7 +246,7 @@ func (c *CobrancaClient) BuscarProposta(param models.BuscarProposta, token, idem
 
 	if resp.StatusCode != 200 {
 		if resp.StatusCode == 401 {
-			return models.PropostaAPIResponse{}, config.API_STATUS_ERR, 401, models.NewAPIError(config.DIGITACAO_ERRO_AUTH, "Erro ao se autenticar na API do BMP", param.CodigoProposta, "CONFIAPAY")
+			return models.PropostaAPIResponse{}, config.API_STATUS_ERR, 401, models.NewAPIError("", "Erro ao se autenticar na API do BMP", param.CodigoProposta, "CONFIAPAY")
 
 		}
 		var APIErr models.APIError

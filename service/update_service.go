@@ -2,9 +2,7 @@ package service
 
 import (
 	"cobranca-bmp/config"
-	"cobranca-bmp/helpers"
 	"cobranca-bmp/models"
-	"context"
 	"errors"
 	"log/slog"
 	"time"
@@ -15,32 +13,17 @@ type QueueProducer interface {
 }
 
 type UpdateService struct {
-	queue    QueueProducer
-	logger   *slog.Logger
-	loc      *time.Location
-	convenio int
+	queue             QueueProducer
+	logger            *slog.Logger
+	loc               *time.Location
+	parcelaRepository ParcelaRepository
 }
 
-func NewUpdateService(logger *slog.Logger, loc *time.Location, convenio int) *UpdateService {
+func NewUpdateService(logger *slog.Logger, loc *time.Location, parcelaRepository ParcelaRepository) *UpdateService {
 	return &UpdateService{
-		logger:   logger,
-		convenio: convenio,
-		loc:      loc,
-	}
-}
-
-func (u *UpdateService) String() string {
-	switch u.convenio {
-	case config.FGTS_CONVENIO:
-		return "FGTS"
-	case config.INSSCP_CONVENIO:
-		return "INSSCP"
-	case config.CREDITO_TRABALHADOR_CONVENIO:
-		return "Crédito Trabalhador"
-	case config.CREDITO_PESSOAL_CONVENIO:
-		return "Crédito Pessoal"
-	default:
-		return ""
+		logger:            logger,
+		loc:               loc,
+		parcelaRepository: parcelaRepository,
 	}
 }
 
@@ -57,15 +40,64 @@ func (u *UpdateService) SetProducer(producer any) error {
 
 }
 
-func (u *UpdateService) UpdateAssync(data models.UpdateDBData) (bool, error) {
-	helpers.LogInfo(context.Background(), u.logger, u.loc, "db", "", "Entrou em update assync, convenio="+u.String(), data)
+func (u *UpdateService) UpdateAssync(data models.UpdateDbData) (bool, error) {
 	var err error
 	var noConn bool
 
 	switch data.Action {
-	case "":
+	case "update_cod_liquidacao":
+		noConn, err = u.UpdateCodLiquidacao(data, true)
+
+	case "update_geracao":
+		noConn, err = u.UpdateGeracaoParcela(data, true)
 	default:
 		return false, errors.New("ação de update inválida")
 	}
 	return noConn, err
+}
+
+func (u *UpdateService) UpdateCodLiquidacao(data models.UpdateDbData, calledAssync bool) (bool, error) {
+
+	noConn, err := u.parcelaRepository.UpdateCodLiquidacao(data.IdPropostaParcela, data.CodigoLiquidacao)
+	if err != nil {
+		if !noConn {
+			var dlqData = models.DLQData{
+				Contexto: "db",
+				Payload:  nil,
+				Mensagem: "falha ao realizar update de código liquidação",
+				Erro:     err.Error(),
+				Time:     time.Now().In(u.loc),
+			}
+			u.queue.Produce(config.DIGTACAO_QUEUE_DLQ, dlqData, 0)
+		} else {
+			if !calledAssync {
+				u.queue.Produce(config.DB_QUEUE, data, config.DB_QUEUE_DELAY)
+			}
+		}
+		return noConn, err
+	}
+	return false, nil
+}
+
+func (u *UpdateService) UpdateGeracaoParcela(data models.UpdateDbData, calledAssync bool) (bool, error) {
+
+	noConn, err := u.parcelaRepository.UpdateGeracaoCobranca(*data.GeracaoParcela, data.CodigoLiquidacao)
+	if err != nil {
+		if !noConn {
+			var dlqData = models.DLQData{
+				Contexto: "db",
+				Payload:  nil,
+				Mensagem: "falha ao realizar update de código liquidação",
+				Erro:     err.Error(),
+				Time:     time.Now().In(u.loc),
+			}
+			u.queue.Produce(config.DIGTACAO_QUEUE_DLQ, dlqData, 0)
+		} else {
+			if !calledAssync {
+				u.queue.Produce(config.DB_QUEUE, data, config.DB_QUEUE_DELAY)
+			}
+		}
+		return noConn, err
+	}
+	return false, nil
 }

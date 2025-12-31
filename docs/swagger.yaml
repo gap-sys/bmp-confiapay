@@ -15,318 +15,7 @@ definitions:
       reconnect:
         type: boolean
     type: object
-  config.CreditoPessoalEnvVars:
-    properties:
-      dataInclusaoCobranca:
-        description: Id da data de inclusão de propostas
-        type: integer
-      dbStatusCobrancaEmitida:
-        description: Status cobrança emitida
-        type: integer
-      dbStatusPendenteEmissaoCobranca:
-        description: Status pendente geração de cobrança
-        type: integer
-      dbStatusPendenteGeracaoCobranca:
-        description: Status pendente emissão de cobrança
-        type: integer
-      maxPrazo:
-        description: Prazo máximo de parcelamento
-        type: integer
-      multiplasCobrancas:
-        description: Define se vai utilizar ou não o modo de múltiplas cobranças para
-          a geração de cobranças.
-        type: boolean
-    type: object
-  config.CreditoTrabalhadorEnvVars:
-    properties:
-      convenio:
-        description: Convênio utilizado nas simulações
-        type: integer
-      dataCcbAssinada:
-        description: Id de data CCB assinada
-        type: integer
-      dataCcbFinalizada:
-        description: Id de data CCB finalizada
-        type: integer
-      dataCcbGerada:
-        description: Id de data CCB gerada
-        type: integer
-      dataCedida:
-        description: Id de data proposta cedida
-        type: integer
-      dataDadosBancariosIncorreto:
-        description: Id de data dados bancários incorretos
-        type: integer
-      dataFinalizacao:
-        description: Id de data finalização
-        type: integer
-      dataLiberacao:
-        description: Id de data liberação
-        type: integer
-      dataPropostaAprovada:
-        description: Id de data proposta aprovada
-        type: integer
-      dataPropostaCancelada:
-        description: Id de data proposta cancelada
-        type: integer
-      dataPropostaPaga:
-        description: Id de data proposta paga
-        type: integer
-      dataUsuarioNaoAutorizado:
-        description: Id de data usuário não autorizado
-        type: integer
-      dbStatusAguardandoCedida:
-        description: Status proposta aguardando cedida
-        type: integer
-      dbStatusAprovada:
-        description: Status proposta aprovada
-        type: integer
-      dbStatusCancelada:
-        description: Status proposta cancelada
-        type: integer
-      dbStatusCedida:
-        description: Status proposta cedida
-        type: integer
-      dbStatusPagaECedida:
-        description: Status proposta paga e cedida
-        type: integer
-      dbStatusPendente:
-        description: Status proposta pendente
-        type: integer
-      dbStatusPendenteCobranca:
-        description: Status proposta pendente cobrança
-        type: integer
-      dbStatusPendenteCancelamento:
-        description: Status proposta pendente cancelamento
-        type: integer
-      dbStatusPendenteCcb:
-        description: Status proposta pendente geração de CCB
-        type: integer
-      dbStatusPendenteDadosBancarios:
-        description: Status proposta pendente dados bancários
-        type: integer
-      dbStatusPropostaAguardandoLiberacao:
-        description: Status proposta aguardando liberação
-        type: integer
-      dbStatusPropostaFinalizada:
-        description: Status proposta finalizada
-        type: integer
-      dbStatusPropostaLiberada:
-        description: Status proposta liberada
-        type: integer
-      dbStatusPropostaPaga:
-        description: Status proposta paga
-        type: integer
-      vinculoExpiracao:
-        description: Tempo(em dias) que um vínculo é considearado expirado a partir
-          de sua criação.
-        type: integer
-    type: object
-  config.FgtsEnvVars:
-    properties:
-      convenio:
-        description: Id do convênio FGTS
-        type: integer
-      dataCcbAssinada:
-        description: Id da data CCB assinada
-        type: integer
-      dataCcbFinalizada:
-        description: Id da data CCB finalizada
-        type: integer
-      dataCcbGerada:
-        description: Id da data CCB gerada
-        type: integer
-      dataCedida:
-        description: Id da data proposta cedida cedida
-        type: integer
-      dataDadosBancariosIncorreto:
-        description: Id da data dados bancários incorreto
-        type: integer
-      dataLiberacao:
-        description: Id da data liberação
-        type: integer
-      dataPropostaAprovada:
-        description: Id da data proposta aprovada
-        type: integer
-      dataPropostaCancelada:
-        description: Id da data proposta cancelada
-        type: integer
-      dataPropostaEstornada:
-        description: Id da data proposta estornada
-        type: integer
-      dataPropostaPaga:
-        description: Id da data proposta paga
-        type: integer
-      dataSolicitacaoTrava:
-        description: Id da data solicitação de trava
-        type: integer
-      dataUsuarioNaoAutorizado:
-        description: Id da data usuário não autorizado
-        type: integer
-      dbStatusAguardandoCedida:
-        description: Status proposta aguardando cedida
-        type: integer
-      dbStatusAprovada:
-        description: Status proposta aprovada
-        type: integer
-      dbStatusCancelada:
-        description: Status proposta cancelada
-        type: integer
-      dbStatusCedida:
-        description: Status proposta cedida
-        type: integer
-      dbStatusPagaECedida:
-        description: Status proposta paga e cedida
-        type: integer
-      dbStatusPendente:
-        description: Status proposta pendente
-        type: integer
-      dbStatusPendenteCobranca:
-        description: Status proposta pendente cobrança
-        type: integer
-      dbStatusPendenteCancelamento:
-        description: Status proposta pendente cancelamento
-        type: integer
-      dbStatusPendenteCcb:
-        description: Status proposta pendente geração de CCB
-        type: integer
-      dbStatusPendenteDadosBancarios:
-        description: Status proposta pendente dados bancários
-        type: integer
-      dbStatusPropostaEstornada:
-        description: Status proposta estornada
-        type: integer
-      dbStatusPropostaLiberada:
-        description: Status proposta liberada
-        type: integer
-      dbStatusPropostaPaga:
-        description: Status proposta paga
-        type: integer
-      dbStatusTravaSolicitada:
-        description: Status trava de saldo solicitada
-        type: integer
-      dbStatusValidandoDadosBAncarios:
-        description: Status proposta em validação de dados bancários
-        type: integer
-      simulacaoStatusAderirSaqueFgts:
-        description: Status simulacao cliente não aderiu ao saldo FGTS
-        type: integer
-      simulacaoStatusAutorizarBanco:
-        description: Status simulacao banco não autorizado a consultar o saldo
-        type: integer
-      simulacaoStatusErroDeSimulacao:
-        description: Status simulacao erro padrão
-        type: integer
-      simulacaoStatusSaldoLiberado:
-        description: Status simulacao saldo liberado
-        type: integer
-      simulacaoStatusSemSaldo:
-        description: Status simulacao cliente não possui saldo
-        type: integer
-    type: object
-  config.GlobalEnvVars:
-    type: object
-  config.InsscpEnvVars:
-    properties:
-      convenio:
-        description: Convênio utilizado nas simulações
-        type: integer
-      dataCcbAssinada:
-        description: Id de data CCB assinada
-        type: integer
-      dataCcbFinalizada:
-        description: Id de data CCB finalizada
-        type: integer
-      dataCcbGerada:
-        description: Id de data CCB gerada
-        type: integer
-      dataCedida:
-        description: Id de data proposta cedida
-        type: integer
-      dataDadosBancariosIncorreto:
-        description: Id de data dados bancários incorretos
-        type: integer
-      dataFinalizacao:
-        description: Id de data finalização
-        type: integer
-      dataLiberacao:
-        description: Id de data liberação
-        type: integer
-      dataPropostaAprovada:
-        description: Id de data proposta aprovada
-        type: integer
-      dataPropostaCancelada:
-        description: Id de data proposta cancelada
-        type: integer
-      dataPropostaPaga:
-        description: Id de data proposta paga
-        type: integer
-      dataUsuarioNaoAutorizado:
-        description: Id de data usuário não autorizado
-        type: integer
-      dbStatusAguardandoCedida:
-        description: Status proposta aguardando cedida
-        type: integer
-      dbStatusAprovada:
-        description: Status proposta aprovada
-        type: integer
-      dbStatusCancelada:
-        description: Status proposta cancelada
-        type: integer
-      dbStatusCedida:
-        description: Status proposta cedida
-        type: integer
-      dbStatusPagaECedida:
-        description: Status proposta paga e cedida
-        type: integer
-      dbStatusPendenteCobranca:
-        description: Status proposta pendente cobrança
-        type: integer
-      dbStatusPendenteCancelamento:
-        description: Status proposta pendente cancelamento
-        type: integer
-      dbStatusPendenteCcb:
-        description: Status proposta pendente geração de CCB
-        type: integer
-      dbStatusPendenteDadosBancarios:
-        description: Status proposta pendente dados bancários
-        type: integer
-      dbStatusPropostaAguardandoLiberacao:
-        description: Status proposta aguardando liberação
-        type: integer
-      dbStatusPropostaFinalizada:
-        description: DbStatusPendente                    int `json:"dbStatusPendente"`                    //Status
-          proposta pendente
-        type: integer
-      dbStatusPropostaLiberada:
-        description: Status proposta liberada
-        type: integer
-      dbStatusPropostaPaga:
-        description: Status proposta paga
-        type: integer
-      dbStatusValidandoDadosBancarios:
-        description: Status proposta em processo de validação de  dados bancários
-        type: integer
-      simulacaoStatusSaldoLiberado:
-        description: Status simulação saldo liberado
-        type: integer
-    type: object
-  helpers.ErrValidation:
-    properties:
-      cMensagem:
-        items:
-          type: integer
-        type: array
-      errors:
-        $ref: '#/definitions/helpers.FieldErr'
-      message:
-        type: string
-    type: object
-  helpers.FieldErr:
-    additionalProperties:
-      items:
-        type: string
-      type: array
+  config.EnvVars:
     type: object
   models.APIError:
     properties:
@@ -369,68 +58,31 @@ definitions:
         type: array
       msg:
         type: string
-      parametros:
-        items:
-          $ref: '#/definitions/models.Parametros'
-        type: array
     type: object
-  models.CobrancaFrontEnd:
+  models.CancelarCobrancaFrontendInput:
     properties:
-      Ccb:
+      codigoLiquidacao:
         type: string
-      DtValidade:
-        type: string
-      IdEsteira:
+      id_convenio:
         type: integer
-      IdProposta:
+      id_proposta:
         type: integer
-      Nome:
+      id_proposta_parcela:
+        type: integer
+      id_securitizadora:
+        type: integer
+      numero_acompanhamento:
         type: string
-      NumeroAcompanhamento:
+      numero_ccb:
+        type: integer
+      url_webhook:
         type: string
     required:
-    - IdProposta
-    type: object
-  models.BuscarPropostaDb:
-    properties:
-      IdProposta:
-        type: integer
-    required:
-    - IdProposta
-    type: object
-  models.BuscarPropostaFrontend:
-    properties:
-      IdProposta:
-        type: integer
-      NumeroAcompanhamento:
-        type: string
-    type: object
-  models.CancelamentoCreditoTrabalhadorFrontendInput:
-    properties:
-      idProposta:
-        type: integer
-      motivoExclusao:
-        type: integer
-      numeroAcompanhamento:
-        type: string
-      numeroContrato:
-        type: integer
-    required:
-    - idProposta
-    - motivoExclusao
-    type: object
-  models.CancelarPropostaPorCodigoFrontend:
-    properties:
-      IdProposta:
-        type: integer
-      NumeroAcompanhamento:
-        type: string
-      TextoMotivoCancelamento:
-        type: string
-    required:
-    - IdProposta
-    - NumeroAcompanhamento
-    - TextoMotivoCancelamento
+    - id_proposta
+    - id_proposta_parcela
+    - numero_acompanhamento
+    - numero_ccb
+    - url_webhook
     type: object
   models.ConsultaBoleto:
     properties:
@@ -455,21 +107,6 @@ definitions:
       urlImpressao:
         type: string
     type: object
-  models.ConsultaBoletoPix:
-    properties:
-      dtCredito:
-        type: string
-      dtExpiracao:
-        type: string
-      dtVencimento:
-        type: string
-      emv:
-        type: string
-      imagem:
-        type: string
-      liquidacao:
-        type: boolean
-    type: object
   models.ConsultaBoletoQrCode:
     properties:
       emv:
@@ -479,14 +116,21 @@ definitions:
     type: object
   models.ConsultaCobrancaFrontEndInput:
     properties:
-      IdProposta:
+      id_convenio:
         type: integer
-      Parcelas:
-        items:
-          type: integer
-        type: array
+      id_proposta:
+        type: integer
+      id_securitizadora:
+        type: integer
+      numero_acompanhamento:
+        type: string
+      numero_parcela:
+        type: integer
     required:
-    - IdProposta
+    - id_convenio
+    - id_proposta
+    - id_securitizadora
+    - numero_acompanhamento
     type: object
   models.ConsultaCobrancaLancamento:
     properties:
@@ -558,7 +202,7 @@ definitions:
         type: integer
       pix:
         items:
-          $ref: '#/definitions/models.ConsultaBoletoPix'
+          $ref: '#/definitions/models.ConsultaPix'
         type: array
       situacao:
         type: integer
@@ -619,67 +263,60 @@ definitions:
       vlrTotalPago:
         type: number
     type: object
-  models.CreditoTrabalhadorConsultarVinculosFrontend:
+  models.ConsultaPix:
     properties:
-      cpfTrabalhador:
+      dtCredito:
         type: string
-      numeroAutorizacao:
-        type: integer
-      webhook:
+      dtExpiracao:
         type: string
-    required:
-    - cpfTrabalhador
-    - numeroAutorizacao
-    type: object
-  models.DigitacaoCreditoTrabalhadorFrontendInput:
-    properties:
-      Assync:
+      dtVencimento:
+        type: string
+      emv:
+        type: string
+      imagem:
+        type: string
+      liquidacao:
         type: boolean
-      IdProposta:
-        type: integer
-      urlCancelamento:
-        type: string
-      webhook:
-        type: string
-    required:
-    - IdProposta
     type: object
-  models.DigitacaoFGTSFrontendInput:
+  models.GerarCobrancaFrontendInput:
     properties:
-      Assync:
-        type: boolean
-      IdProposta:
-        type: integer
-      idCliente:
-        type: integer
-      urlCancelamento:
+      data_expiracao:
         type: string
-      webhook:
+      data_vencimento:
         type: string
+      id_convenio:
+        type: integer
+      id_forma_cobranca:
+        type: integer
+      id_proposta:
+        type: integer
+      id_proposta_parcela:
+        type: integer
+      id_securitizadora:
+        type: integer
+      numero_acompanhamento:
+        type: string
+      numero_ccb:
+        type: integer
+      numero_parcela:
+        type: integer
+      token:
+        type: string
+      url_webhook:
+        type: string
+      valor_parcela:
+        type: number
     required:
-    - IdProposta
-    type: object
-  models.DigitacaoINSSCPFrontendInput:
-    properties:
-      Assync:
-        type: boolean
-      IdProposta:
-        type: integer
-      urlCancelamento:
-        type: string
-      webhook:
-        type: string
-    required:
-    - IdProposta
-    type: object
-  models.JRPCResponse:
-    properties:
-      data: {}
-      error: {}
-      id: {}
-      jsonrpc:
-        type: string
-      result: {}
+    - data_expiracao
+    - data_vencimento
+    - id_forma_cobranca
+    - id_proposta
+    - id_proposta_parcela
+    - numero_acompanhamento
+    - numero_ccb
+    - numero_parcela
+    - token
+    - url_webhook
     type: object
   models.Message:
     properties:
@@ -694,258 +331,43 @@ definitions:
       messageType:
         type: integer
     type: object
-  models.Parametros:
-    properties:
-      nome:
-        type: string
-      valor:
-        type: string
-    type: object
-  models.SimulacaoCreditoPessoalFrontendInput:
-    properties:
-      Assync:
-        type: boolean
-      FluxoIrregular:
-        type: boolean
-      IOF:
-        type: number
-      IdSimulacao:
-        type: integer
-      NroDiasAcrescimo:
-        type: integer
-      NroDiasIntervalo:
-        type: integer
-      PeriodicidadeLabel:
-        type: string
-      Tabelas:
-        items:
-          $ref: '#/definitions/models.TabelaCreditoPessoal'
-        minItems: 1
-        type: array
-      TipoPessoa:
-        enum:
-        - 1
-        - 2
-        type: integer
-      tipoSimulacao:
-        enum:
-        - 1
-        - 2
-        - 3
-        - 4
-        type: integer
-      webhook:
-        type: string
-    required:
-    - IdSimulacao
-    - PeriodicidadeLabel
-    - Tabelas
-    - TipoPessoa
-    type: object
-  models.SimulacaoCreditoTrabalhadorFrontendInput:
-    properties:
-      Assync:
-        type: boolean
-      IdSimulacao:
-        type: integer
-      Tabelas:
-        description: |-
-          NroDiasAcrescimo int                        `json:"NroDiasAcrescimo,omitempty"`
-          TipoPessoa       int                        `json:"TipoPessoa" validate:"required,oneof=1 2"`
-        items:
-          $ref: '#/definitions/models.TabelaCreditoTrabalhador'
-        minItems: 1
-        type: array
-      webhook:
-        type: string
-    required:
-    - IdSimulacao
-    - Tabelas
-    type: object
-  models.SimulacaoFGTSFrontendInput:
-    properties:
-      Assync:
-        type: boolean
-      CpfTrabalhador:
-        type: string
-      DtAniversario:
-        type: string
-      IdCliente:
-        type: integer
-      IdCorban:
-        type: integer
-      IdSimulacao:
-        type: integer
-      IdUsuario:
-        type: integer
-      MaxPeriodo:
-        type: integer
-      Periodo:
-        type: integer
-      VlrEmprestimo:
-        type: number
-      tabelas:
-        items:
-          $ref: '#/definitions/models.TabelaFGTS'
-        minItems: 1
-        type: array
-      webhook:
-        type: string
-    required:
-    - CpfTrabalhador
-    - DtAniversario
-    - IdCliente
-    - IdSimulacao
-    - IdUsuario
-    - tabelas
-    type: object
-  models.SimulacaoINSSCPFrontendInput:
-    properties:
-      Assync:
-        type: boolean
-      IdSimulacao:
-        type: integer
-      NroDiasAcrescimo:
-        type: integer
-      Tabelas:
-        items:
-          $ref: '#/definitions/models.TabelaINSSCP'
-        minItems: 1
-        type: array
-      TipoPessoa:
-        enum:
-        - 1
-        - 2
-        type: integer
-      webhook:
-        type: string
-    required:
-    - IdSimulacao
-    - Tabelas
-    - TipoPessoa
-    type: object
-  models.TabelaCreditoPessoal:
-    properties:
-      IdTabela:
-        type: integer
-      IdempotencyKey:
-        type: string
-      PercJurosMaximo:
-        type: number
-      PercJurosMinimo:
-        type: number
-      Prazo:
-        type: integer
-      Prazos:
-        items:
-          type: integer
-        type: array
-      VlrParcela:
-        type: number
-      VlrSolicitado:
-        type: number
-      VlrTac:
-        type: number
-      idTabelaBeneficio:
-        type: integer
-      idTabelaSeguro:
-        type: integer
-      intervaloTaxa:
-        type: number
-      percJurosNegociado:
-        type: number
-      percTac:
-        type: number
-      tipoTac:
-        enum:
-        - P
-        - V
-        type: string
-      tolerancia:
-        type: number
-      vlrBeneficio:
-        type: number
-      vlrSeguro:
-        type: number
-    required:
-    - IdTabela
-    type: object
-  models.TabelaCreditoTrabalhador:
-    properties:
-      IdTabela:
-        type: integer
-      Prazos:
-        items:
-          type: integer
-        type: array
-      ValorLiberado:
-        type: number
-      ValorTaxaMensal:
-        minimum: 0
-        type: number
-      idTabelaSeguro:
-        type: integer
-      valorSeguro:
-        type: number
-    required:
-    - IdTabela
-    - ValorLiberado
-    type: object
-  models.TabelaFGTS:
-    properties:
-      IdTabela:
-        type: integer
-      PercTAC:
-        minimum: 0
-        type: number
-      TaxaMensal:
-        minimum: 0
-        type: number
-    required:
-    - IdTabela
-    type: object
-  models.TabelaINSSCP:
-    properties:
-      IdTabela:
-        type: integer
-      IdempotencyKey:
-        type: string
-      Prazos:
-        items:
-          type: integer
-        type: array
-      VlrSolicitado:
-        type: number
-      VlrTac:
-        minimum: 0
-        type: number
-      idTabelaBeneficio:
-        type: integer
-      idTabelaSeguro:
-        type: integer
-      percJurosNegociado:
-        minimum: 0
-        type: number
-      vlrBeneficio:
-        type: number
-      vlrSeguro:
-        type: number
-    required:
-    - IdTabela
-    - VlrSolicitado
-    type: object
 host: bmp-fgts.Confiapay.com.br
 info:
   contact:
     email: felipeaug92@gmail.com
     name: Felipe Augusto De Faria Freitas
-  description: 'Microserviço de acesso aos serviços bancários do Banco BMP, permite
-    simulação, gravação e consulta de propostas.\n Produtos suportados: FGTS, Crédito
-    Pessoal INSS, Crédito CLT. \n Para mais informações referentes aos dados a serem
-    enviados, consulte a aba "model" na seção de body dos endpoints.'
-  title: BMP Microservice
+  description: Microserviço de acesso aos serviços de geração de cobranças do BMP.
+    \n Para mais informações referentes aos dados a serem enviados, consulte a aba
+    "model" na seção de body dos endpoints.
+  title: BMP Cobrança
   version: "1.0"
 paths:
+  /cancelamento:
+    post:
+      consumes:
+      - application/json
+      description: Realiza o cancelamento de boletos.
+      parameters:
+      - description: Dados da cobrança.
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.CancelarCobrancaFrontendInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.APIError'
+      summary: Cancelar Boleto.
+      tags:
+      - CreditoPessoal
   /config/db/set:
     post:
       consumes:
@@ -969,7 +391,8 @@ paths:
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/models.JRPCResponse'
+            additionalProperties: true
+            type: object
       summary: Reconfigurar DB.
       tags:
       - Config
@@ -984,7 +407,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/config.GlobalEnvVars'
+          $ref: '#/definitions/config.EnvVars'
       produces:
       - application/json
       responses:
@@ -996,225 +419,13 @@ paths:
         "422":
           description: Unprocessable Entity
           schema:
-            $ref: '#/definitions/models.JRPCResponse'
+            additionalProperties:
+              type: string
+            type: object
       summary: Configurar variáveis de ambiente globais.
       tags:
       - Config
-  /config/env/creditopessoal:
-    post:
-      consumes:
-      - application/json
-      description: Configura variáveis de ambiente para o produto Crédito Pessoal.
-      parameters:
-      - description: Variáveis que se deseja alterar.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/config.CreditoPessoalEnvVars'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Configurar variáveis de ambiente Crédito Pessoal.
-      tags:
-      - Config
-  /config/env/creditotrabalhador:
-    post:
-      consumes:
-      - application/json
-      description: Configura variáveis de ambiente para o produto Crédito Trabalhador.
-      parameters:
-      - description: Variáveis que se deseja alterar.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/config.CreditoTrabalhadorEnvVars'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Configurar variáveis de ambiente Crédito Trabalhador.
-      tags:
-      - Config
-  /config/env/fgts:
-    post:
-      consumes:
-      - application/json
-      description: Configura variáveis de ambiente para o produto FGTS.
-      parameters:
-      - description: Variáveis que se deseja alterar.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/config.FgtsEnvVars'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Configurar variáveis de ambiente FGTS.
-      tags:
-      - Config
-  /config/env/insscp:
-    post:
-      consumes:
-      - application/json
-      description: Configura variáveis de ambiente para o produto INSSCP.
-      parameters:
-      - description: Variáveis que se deseja alterar.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/config.InsscpEnvVars'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Configurar variáveis de ambiente INSSCP.
-      tags:
-      - Config
-  /creditopessoal/cobranca:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o processo de cobrança de uma proposta na API do BMP.
-      parameters:
-      - description: CCB assinada,nome de arquivo,dados da proposta e ID da esteira
-          que será buscado o status.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CobrancaFrontEnd'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Averbar Proposta.
-      tags:
-      - CreditoPessoal
-  /creditopessoal/cancelamento:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o cancelamento de uma proposta de empréstimo de CreditoPessoal
-        por seu código na API do BMP.
-      parameters:
-      - description: Código da proposta que se deseja cancelar e motivo do cancelamento.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CancelarPropostaPorCodigoFrontend'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/helpers.ErrValidation'
-      summary: Cancelamento de proposta por seu código do BMP
-      tags:
-      - CreditoPessoal
-  /creditopessoal/cobranca/cancelamento:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o cancelamento de boletos.
-      parameters:
-      - description: Identificador da proposta para ser buscado os dados bancários.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaDb'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Cancelar Boleto.
-      tags:
-      - CreditoPessoal
-  /creditopessoal/cobranca/geracao:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a geracao de cobranças na API do BMP.
-      parameters:
-      - description: Id da proposta que se deseja realizar a cobrança.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaDb'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: GerarCobranca Proposta.
-      tags:
-      - CreditoPessoal
-  /creditopessoal/cobrancas:
+  /consulta:
     post:
       consumes:
       - application/json
@@ -1240,19 +451,18 @@ paths:
       summary: Consultar Cobranças.
       tags:
       - CreditoPessoal
-  /creditopessoal/dadosbancarios/atualizar:
+  /geracao:
     post:
       consumes:
       - application/json
-      description: Realiza atualização de dados bancários de uma proposta na API do
-        BMP.
+      description: Realiza a geracao de cobranças na API do BMP.
       parameters:
-      - description: Identificador da proposta para ser buscado os dados bancários.
+      - description: Dados da cobrança.
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/models.BuscarPropostaDb'
+          $ref: '#/definitions/models.GerarCobrancaFrontendInput'
       produces:
       - application/json
       responses:
@@ -1264,715 +474,7 @@ paths:
           description: Unprocessable Entity
           schema:
             $ref: '#/definitions/models.APIError'
-      summary: Atualizar Dados Bancários.
+      summary: GerarCobranca Proposta.
       tags:
       - CreditoPessoal
-  /creditopessoal/digitacao:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a digitação de propostas de empréstimo de Crédito Pessoal.
-      parameters:
-      - description: ID da proposta para que sejam buscados os dados e modo de processamento(caso
-          Assync seja passado como true, o processo será executado em fila).
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.DigitacaoINSSCPFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Digitação de propostas.
-      tags:
-      - CreditoPessoal
-  /creditopessoal/liberacao:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a liberação da proposta.
-      parameters:
-      - description: Identificador da proposta para ser buscado os dados bancários.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaDb'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: LIberar proposta.
-      tags:
-      - CreditoPessoal
-  /creditopessoal/simulacao/:
-    post:
-      consumes:
-      - application/json
-      description: Realiza simulação de valores disponíveis para empréstimo de Crédito
-        Pessoal.
-      parameters:
-      - description: Dados necessários para a realização da simulação e modo de processamento(caso
-          Assync seja passado como true, o processo será executado em fila).
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.SimulacaoCreditoPessoalFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Realizar simulação.
-      tags:
-      - CreditoPessoal
-  /creditotrabalhador/cobranca:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o processo de cobrança de uma proposta na API do BMP.
-      parameters:
-      - description: CCB assinada,nome de arquivo,dados da proposta e ID da esteira
-          que será buscado o status.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CobrancaFrontEnd'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Averbar Proposta.
-      tags:
-      - Crédito Trabalhador
-  /creditotrabalhador/cancelamento:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o cancelamento de uma proposta de empréstimo de CreditoTrabalhador.
-      parameters:
-      - description: ID da proposta que se deseja cancelar e motivo do cancelamento.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CancelamentoCreditoTrabalhadorFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/helpers.ErrValidation'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-      summary: Cancelamento de proposta
-      tags:
-      - Crédito Trabalhador
-  /creditotrabalhador/cancelamento/paga:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o cancelamento de uma proposta de empréstimo de CreditoTrabalhador
-        que já foi paga.
-      parameters:
-      - description: Código da proposta que se deseja cancelar e motivo do cancelamento.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CancelarPropostaPorCodigoFrontend'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/helpers.ErrValidation'
-      summary: Cancelamento de proposta paga
-      tags:
-      - INSSCP
-  /creditotrabalhador/dadosbancarios/atualizar:
-    post:
-      consumes:
-      - application/json
-      description: Realiza atualização de dados bancários de uma proposta na API do
-        BMP.
-      parameters:
-      - description: Identificador da proposta para ser buscado os dados bancários.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaDb'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Atualizar Dados Bancários.
-      tags:
-      - Crédito Trabalhador
-  /creditotrabalhador/digitacao:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a digitação de propostas de empréstimo de Credito Trabalhador.
-      parameters:
-      - description: ID da proposta para que sejam buscados os dados e modo de processamento(caso
-          Assync seja passado como true, o processo será executado em fila).
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.DigitacaoCreditoTrabalhadorFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Digitação de propostas.
-      tags:
-      - Crédito Trabalhador
-  /creditotrabalhador/elegibilidade/:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a busca de vínculos associados a um trabalhador
-      parameters:
-      - description: CPF do trabalhador e autorização de consulta de vínculos
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CreditoTrabalhadorConsultarVinculosFrontend'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Buscar vínculos.
-      tags:
-      - Crédito Trabalhador
-  /creditotrabalhador/simulacao/:
-    post:
-      consumes:
-      - application/json
-      description: Realiza simulação de valores disponíveis para empréstimo de Credito
-        CLT.
-      parameters:
-      - description: Dados necessários para a realização da simulação e modo de processamento(caso
-          Assync seja passado como true, o processo será executado em fila).
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.SimulacaoCreditoTrabalhadorFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Realizar simulação.
-      tags:
-      - Crédito Trabalhador
-  /fgts/cobranca:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o processo de cobrança de uma proposta na API do BMP.
-      parameters:
-      - description: CCB assinada,nome de arquivo,dados da proposta e ID da esteira
-          que será buscado o status.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CobrancaFrontEnd'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Averbar Proposta.
-      tags:
-      - FGTS
-  /fgts/cancelamento:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o cancelamento de uma proposta de empréstimo de FGTS por
-        seu código na API do BMP.
-      parameters:
-      - description: Número do acompanhamento e ID da proposta.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CancelarPropostaPorCodigoFrontend'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/helpers.ErrValidation'
-      summary: Cancelamento de proposta do BMP
-      tags:
-      - FGTS
-  /fgts/consulta:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a busca de uma proposta de empréstimo de FGTS pelo ID ou
-        código de operação.
-      parameters:
-      - description: ID ou código de operação da proposta que se deseja pesquisar.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaFrontend'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/helpers.ErrValidation'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Realiza a busca por propostas.
-      tags:
-      - FGTS
-  /fgts/dadosbancarios/atualizar:
-    post:
-      consumes:
-      - application/json
-      description: Realiza atualização de dados bancários de uma proposta na API do
-        BMP.
-      parameters:
-      - description: Identificador da proposta para ser buscado os dados bancários.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaDb'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Atualizar Dados Bancários.
-      tags:
-      - FGTS
-  /fgts/digitacao:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a digitação de propostas de empréstimo de saque-aniversário
-        FGTS.
-      parameters:
-      - description: ID da proposta para que sejam buscados os dados e modo de processamento(caso
-          Assync seja passado como true, o processo será executado em fila).
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.DigitacaoFGTSFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Digitação de propostas.
-      tags:
-      - FGTS
-  /fgts/estorno:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o estorno de uma proposta de empréstimo de FGTS que já
-        foi paga.
-      parameters:
-      - description: Código da proposta que se deseja cancelar e motivo do cancelamento.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CancelarPropostaPorCodigoFrontend'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/helpers.ErrValidation'
-      summary: Estorno de proposta paga
-      tags:
-      - FGTS
-  /fgts/simulacao/:
-    post:
-      consumes:
-      - application/json
-      description: Realiza simulação de valores disponíveis para empréstimo de saque-aniversário
-        FGTS.
-      parameters:
-      - description: Dados necessários para a realização da simulação e modo de processamento(caso
-          Assync seja passado como true, o processo será executado em fila).
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.SimulacaoFGTSFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Realizar simulação.
-      tags:
-      - FGTS
-  /insscp/cobranca:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o processo de cobrança de uma proposta na API do BMP.
-      parameters:
-      - description: CCB assinada,nome de arquivo,dados da proposta e ID da esteira
-          que será buscado o status.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CobrancaFrontEnd'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Averbar Proposta.
-      tags:
-      - INSSCP
-  /insscp/cancelamento:
-    post:
-      consumes:
-      - application/json
-      description: Realiza o cancelamento de uma proposta de empréstimo de INSSCP
-        por seu código na API do BMP.
-      parameters:
-      - description: Código da proposta que se deseja cancelar e motivo do cancelamento.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.CancelarPropostaPorCodigoFrontend'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/helpers.ErrValidation'
-      summary: Cancelamento de proposta por seu código do BMP
-      tags:
-      - INSSCP
-  /insscp/consulta:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a busca de uma proposta de empréstimo de INSSCP pelo ID
-        ou código de operação.
-      parameters:
-      - description: ID ou código de operação da proposta que se deseja pesquisar.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaFrontend'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/helpers.ErrValidation'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Realiza a busca por propostas.
-      tags:
-      - INSSCP
-  /insscp/dadosbancarios/atualizar:
-    post:
-      consumes:
-      - application/json
-      description: Realiza atualização de dados bancários de uma proposta na API do
-        BMP.
-      parameters:
-      - description: Identificador da proposta para ser buscado os dados bancários.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaDb'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Atualizar Dados Bancários.
-      tags:
-      - INSSCP
-  /insscp/digitacao:
-    post:
-      consumes:
-      - application/json
-      description: Realiza a digitação de propostas de empréstimo de INSSCP.
-      parameters:
-      - description: ID da proposta para que sejam buscados os dados e modo de processamento(caso
-          Assync seja passado como true, o processo será executado em fila).
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.DigitacaoINSSCPFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Digitação de propostas.
-      tags:
-      - INSSCP
-  /insscp/liberacao:
-    post:
-      consumes:
-      - application/json
-      description: Realiza atualização de dados bancários de uma proposta na API do
-        BMP.
-      parameters:
-      - description: Identificador da proposta para ser buscado os dados bancários.
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.BuscarPropostaDb'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.APIResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.APIError'
-      summary: Atualizar Dados Bancários.
-      tags:
-      - INSSCP
-  /insscp/simulacao/:
-    post:
-      consumes:
-      - application/json
-      description: Realiza simulação de valores disponíveis para empréstimo de INSSCPCP.
-      parameters:
-      - description: Dados necessários para a realização da simulação e modo de processamento(caso
-          Assync seja passado como true, o processo será executado em fila).
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.SimulacaoINSSCPFrontendInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.JRPCResponse'
-      summary: Realizar simulação.
-      tags:
-      - INSSCP
 swagger: "2.0"

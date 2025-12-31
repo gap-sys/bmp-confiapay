@@ -16,7 +16,7 @@ import (
 )
 
 type PropostaService interface {
-	UpdateAssync(data models.UpdateDBData) (bool, error)
+	UpdateAssync(data models.UpdateDbData) (bool, error)
 }
 
 type FileProducer interface {
@@ -241,9 +241,9 @@ func (r *RedisCache) GetTTL(key string) time.Duration {
 
 }
 
-func (r *RedisCache) Publish(payload models.UpdateDBData) error {
+func (r *RedisCache) Publish(payload models.UpdateDbData) error {
 	payloadBytes, err := json.Marshal(payload)
-	key := fmt.Sprintf("%d:%d", payload.IdProposta, payload.StatusId)
+	key := fmt.Sprintf("%v", payload)
 	if err != nil {
 		helpers.LogError(r.ctx, r.logger, r.loc, "redis", "", "Erro ao serializar mensagem para publicar no canal", err.Error(), payload)
 		return err
@@ -269,7 +269,7 @@ func (r *RedisCache) Publish(payload models.UpdateDBData) error {
 
 func (r *RedisCache) Consume() {
 	for msg := range r.dbMsgs {
-		var payload models.UpdateDBData
+		var payload models.UpdateDbData
 		if err := json.Unmarshal([]byte(msg.Payload), &payload); err != nil {
 			helpers.LogError(r.ctx, r.logger, r.loc, "redis", "", "Erro ao desserializar payload", err.Error(), msg.Payload)
 		}
@@ -282,7 +282,7 @@ func (r *RedisCache) Consume() {
 				r.Publish(payload)
 			}
 		}
-		key := fmt.Sprintf("%d:%d", payload.IdProposta, payload.StatusId)
+		key := fmt.Sprintf("%v", payload)
 		err = r.client.Expire(r.ctx, key, 0).Err()
 		if err != nil {
 			helpers.LogError(r.ctx, r.logger, r.loc, "redis", key, "Erro ao deletar payload processado no Redis", err, msg.Payload)

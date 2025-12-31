@@ -18,6 +18,46 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/cancelamento": {
+            "post": {
+                "description": "Realiza o cancelamento de boletos.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CreditoPessoal"
+                ],
+                "summary": "Cancelar Boleto.",
+                "parameters": [
+                    {
+                        "description": "Dados da cobrança.",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CancelarCobrancaFrontendInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/config/db/set": {
             "post": {
                 "description": "Reconfigura os valores do DB.",
@@ -53,7 +93,8 @@ const docTemplate = `{
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -79,7 +120,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/config.GlobalEnvVars"
+                            "$ref": "#/definitions/config.EnvVars"
                         }
                     }
                 ],
@@ -94,337 +135,16 @@ const docTemplate = `{
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/config/env/creditopessoal": {
-            "post": {
-                "description": "Configura variáveis de ambiente para o produto Crédito Pessoal.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Config"
-                ],
-                "summary": "Configurar variáveis de ambiente Crédito Pessoal.",
-                "parameters": [
-                    {
-                        "description": "Variáveis que se deseja alterar.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/config.CreditoPessoalEnvVars"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
                             "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
             }
         },
-        "/config/env/creditotrabalhador": {
-            "post": {
-                "description": "Configura variáveis de ambiente para o produto Crédito Trabalhador.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Config"
-                ],
-                "summary": "Configurar variáveis de ambiente Crédito Trabalhador.",
-                "parameters": [
-                    {
-                        "description": "Variáveis que se deseja alterar.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/config.CreditoTrabalhadorEnvVars"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/config/env/fgts": {
-            "post": {
-                "description": "Configura variáveis de ambiente para o produto FGTS.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Config"
-                ],
-                "summary": "Configurar variáveis de ambiente FGTS.",
-                "parameters": [
-                    {
-                        "description": "Variáveis que se deseja alterar.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/config.FgtsEnvVars"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/config/env/insscp": {
-            "post": {
-                "description": "Configura variáveis de ambiente para o produto INSSCP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Config"
-                ],
-                "summary": "Configurar variáveis de ambiente INSSCP.",
-                "parameters": [
-                    {
-                        "description": "Variáveis que se deseja alterar.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/config.InsscpEnvVars"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditopessoal/cobranca": {
-            "post": {
-                "description": "Realiza o processo de cobrança de uma proposta na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CreditoPessoal"
-                ],
-                "summary": "Averbar Proposta.",
-                "parameters": [
-                    {
-                        "description": "CCB assinada,nome de arquivo,dados da proposta e ID da esteira que será buscado o status.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CobrancaFrontEnd"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditopessoal/cancelamento": {
-            "post": {
-                "description": "Realiza o cancelamento de uma proposta de empréstimo de CreditoPessoal por seu código na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CreditoPessoal"
-                ],
-                "summary": "Cancelamento de proposta por seu código do BMP",
-                "parameters": [
-                    {
-                        "description": "Código da proposta que se deseja cancelar e motivo do cancelamento.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CancelarPropostaPorCodigoFrontend"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/helpers.ErrValidation"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditopessoal/cobranca/cancelamento": {
-            "post": {
-                "description": "Realiza o cancelamento de boletos.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CreditoPessoal"
-                ],
-                "summary": "Cancelar Boleto.",
-                "parameters": [
-                    {
-                        "description": "Identificador da proposta para ser buscado os dados bancários.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaDb"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditopessoal/cobranca/geracao": {
-            "post": {
-                "description": "Realiza a geracao de cobranças na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CreditoPessoal"
-                ],
-                "summary": "GerarCobranca Proposta.",
-                "parameters": [
-                    {
-                        "description": "Id da proposta que se deseja realizar a cobrança.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaDb"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditopessoal/cobrancas": {
+        "/consulta": {
             "post": {
                 "description": "Realiza a consulta de cobranças geradas para uma proposta específica.",
                 "consumes": [
@@ -464,9 +184,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/creditopessoal/dadosbancarios/atualizar": {
+        "/geracao": {
             "post": {
-                "description": "Realiza atualização de dados bancários de uma proposta na API do BMP.",
+                "description": "Realiza a geracao de cobranças na API do BMP.",
                 "consumes": [
                     "application/json"
                 ],
@@ -476,15 +196,15 @@ const docTemplate = `{
                 "tags": [
                     "CreditoPessoal"
                 ],
-                "summary": "Atualizar Dados Bancários.",
+                "summary": "GerarCobranca Proposta.",
                 "parameters": [
                     {
-                        "description": "Identificador da proposta para ser buscado os dados bancários.",
+                        "description": "Dados da cobrança.",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaDb"
+                            "$ref": "#/definitions/models.GerarCobrancaFrontendInput"
                         }
                     }
                 ],
@@ -499,1054 +219,6 @@ const docTemplate = `{
                         "description": "Unprocessable Entity",
                         "schema": {
                             "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditopessoal/digitacao": {
-            "post": {
-                "description": "Realiza a digitação de propostas de empréstimo de Crédito Pessoal.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CreditoPessoal"
-                ],
-                "summary": "Digitação de propostas.",
-                "parameters": [
-                    {
-                        "description": "ID da proposta para que sejam buscados os dados e modo de processamento(caso Assync seja passado como true, o processo será executado em fila).",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.DigitacaoINSSCPFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditopessoal/liberacao": {
-            "post": {
-                "description": "Realiza a liberação da proposta.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CreditoPessoal"
-                ],
-                "summary": "LIberar proposta.",
-                "parameters": [
-                    {
-                        "description": "Identificador da proposta para ser buscado os dados bancários.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaDb"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditopessoal/simulacao/": {
-            "post": {
-                "description": "Realiza simulação de valores disponíveis para empréstimo de Crédito Pessoal.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "CreditoPessoal"
-                ],
-                "summary": "Realizar simulação.",
-                "parameters": [
-                    {
-                        "description": "Dados necessários para a realização da simulação e modo de processamento(caso Assync seja passado como true, o processo será executado em fila).",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SimulacaoCreditoPessoalFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditotrabalhador/cobranca": {
-            "post": {
-                "description": "Realiza o processo de cobrança de uma proposta na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Crédito Trabalhador"
-                ],
-                "summary": "Averbar Proposta.",
-                "parameters": [
-                    {
-                        "description": "CCB assinada,nome de arquivo,dados da proposta e ID da esteira que será buscado o status.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CobrancaFrontEnd"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditotrabalhador/cancelamento": {
-            "post": {
-                "description": "Realiza o cancelamento de uma proposta de empréstimo de CreditoTrabalhador.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Crédito Trabalhador"
-                ],
-                "summary": "Cancelamento de proposta",
-                "parameters": [
-                    {
-                        "description": "ID da proposta que se deseja cancelar e motivo do cancelamento.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CancelamentoCreditoTrabalhadorFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/helpers.ErrValidation"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditotrabalhador/cancelamento/paga": {
-            "post": {
-                "description": "Realiza o cancelamento de uma proposta de empréstimo de CreditoTrabalhador que já foi paga.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "INSSCP"
-                ],
-                "summary": "Cancelamento de proposta paga",
-                "parameters": [
-                    {
-                        "description": "Código da proposta que se deseja cancelar e motivo do cancelamento.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CancelarPropostaPorCodigoFrontend"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/helpers.ErrValidation"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditotrabalhador/dadosbancarios/atualizar": {
-            "post": {
-                "description": "Realiza atualização de dados bancários de uma proposta na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Crédito Trabalhador"
-                ],
-                "summary": "Atualizar Dados Bancários.",
-                "parameters": [
-                    {
-                        "description": "Identificador da proposta para ser buscado os dados bancários.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaDb"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditotrabalhador/digitacao": {
-            "post": {
-                "description": "Realiza a digitação de propostas de empréstimo de Credito Trabalhador.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Crédito Trabalhador"
-                ],
-                "summary": "Digitação de propostas.",
-                "parameters": [
-                    {
-                        "description": "ID da proposta para que sejam buscados os dados e modo de processamento(caso Assync seja passado como true, o processo será executado em fila).",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.DigitacaoCreditoTrabalhadorFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditotrabalhador/elegibilidade/": {
-            "post": {
-                "description": "Realiza a busca de vínculos associados a um trabalhador",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Crédito Trabalhador"
-                ],
-                "summary": "Buscar vínculos.",
-                "parameters": [
-                    {
-                        "description": "CPF do trabalhador e autorização de consulta de vínculos",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CreditoTrabalhadorConsultarVinculosFrontend"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/creditotrabalhador/simulacao/": {
-            "post": {
-                "description": "Realiza simulação de valores disponíveis para empréstimo de Credito CLT.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Crédito Trabalhador"
-                ],
-                "summary": "Realizar simulação.",
-                "parameters": [
-                    {
-                        "description": "Dados necessários para a realização da simulação e modo de processamento(caso Assync seja passado como true, o processo será executado em fila).",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SimulacaoCreditoTrabalhadorFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/fgts/cobranca": {
-            "post": {
-                "description": "Realiza o processo de cobrança de uma proposta na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "FGTS"
-                ],
-                "summary": "Averbar Proposta.",
-                "parameters": [
-                    {
-                        "description": "CCB assinada,nome de arquivo,dados da proposta e ID da esteira que será buscado o status.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CobrancaFrontEnd"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/fgts/cancelamento": {
-            "post": {
-                "description": "Realiza o cancelamento de uma proposta de empréstimo de FGTS por seu código na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "FGTS"
-                ],
-                "summary": "Cancelamento de proposta do BMP",
-                "parameters": [
-                    {
-                        "description": "Número do acompanhamento e ID da proposta.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CancelarPropostaPorCodigoFrontend"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/helpers.ErrValidation"
-                        }
-                    }
-                }
-            }
-        },
-        "/fgts/consulta": {
-            "post": {
-                "description": "Realiza a busca de uma proposta de empréstimo de FGTS pelo ID ou código de operação.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "FGTS"
-                ],
-                "summary": "Realiza a busca por propostas.",
-                "parameters": [
-                    {
-                        "description": "ID ou código de operação da proposta que se deseja pesquisar.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaFrontend"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/helpers.ErrValidation"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/fgts/dadosbancarios/atualizar": {
-            "post": {
-                "description": "Realiza atualização de dados bancários de uma proposta na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "FGTS"
-                ],
-                "summary": "Atualizar Dados Bancários.",
-                "parameters": [
-                    {
-                        "description": "Identificador da proposta para ser buscado os dados bancários.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaDb"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/fgts/digitacao": {
-            "post": {
-                "description": "Realiza a digitação de propostas de empréstimo de saque-aniversário FGTS.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "FGTS"
-                ],
-                "summary": "Digitação de propostas.",
-                "parameters": [
-                    {
-                        "description": "ID da proposta para que sejam buscados os dados e modo de processamento(caso Assync seja passado como true, o processo será executado em fila).",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.DigitacaoFGTSFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/fgts/estorno": {
-            "post": {
-                "description": "Realiza o estorno de uma proposta de empréstimo de FGTS que já foi paga.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "FGTS"
-                ],
-                "summary": "Estorno de proposta paga",
-                "parameters": [
-                    {
-                        "description": "Código da proposta que se deseja cancelar e motivo do cancelamento.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CancelarPropostaPorCodigoFrontend"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/helpers.ErrValidation"
-                        }
-                    }
-                }
-            }
-        },
-        "/fgts/simulacao/": {
-            "post": {
-                "description": "Realiza simulação de valores disponíveis para empréstimo de saque-aniversário FGTS.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "FGTS"
-                ],
-                "summary": "Realizar simulação.",
-                "parameters": [
-                    {
-                        "description": "Dados necessários para a realização da simulação e modo de processamento(caso Assync seja passado como true, o processo será executado em fila).",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SimulacaoFGTSFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/insscp/cobranca": {
-            "post": {
-                "description": "Realiza o processo de cobrança de uma proposta na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "INSSCP"
-                ],
-                "summary": "Averbar Proposta.",
-                "parameters": [
-                    {
-                        "description": "CCB assinada,nome de arquivo,dados da proposta e ID da esteira que será buscado o status.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CobrancaFrontEnd"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/insscp/cancelamento": {
-            "post": {
-                "description": "Realiza o cancelamento de uma proposta de empréstimo de INSSCP por seu código na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "INSSCP"
-                ],
-                "summary": "Cancelamento de proposta por seu código do BMP",
-                "parameters": [
-                    {
-                        "description": "Código da proposta que se deseja cancelar e motivo do cancelamento.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CancelarPropostaPorCodigoFrontend"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/helpers.ErrValidation"
-                        }
-                    }
-                }
-            }
-        },
-        "/insscp/consulta": {
-            "post": {
-                "description": "Realiza a busca de uma proposta de empréstimo de INSSCP pelo ID ou código de operação.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "INSSCP"
-                ],
-                "summary": "Realiza a busca por propostas.",
-                "parameters": [
-                    {
-                        "description": "ID ou código de operação da proposta que se deseja pesquisar.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaFrontend"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/helpers.ErrValidation"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/insscp/dadosbancarios/atualizar": {
-            "post": {
-                "description": "Realiza atualização de dados bancários de uma proposta na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "INSSCP"
-                ],
-                "summary": "Atualizar Dados Bancários.",
-                "parameters": [
-                    {
-                        "description": "Identificador da proposta para ser buscado os dados bancários.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaDb"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/insscp/digitacao": {
-            "post": {
-                "description": "Realiza a digitação de propostas de empréstimo de INSSCP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "INSSCP"
-                ],
-                "summary": "Digitação de propostas.",
-                "parameters": [
-                    {
-                        "description": "ID da proposta para que sejam buscados os dados e modo de processamento(caso Assync seja passado como true, o processo será executado em fila).",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.DigitacaoINSSCPFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/insscp/liberacao": {
-            "post": {
-                "description": "Realiza atualização de dados bancários de uma proposta na API do BMP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "INSSCP"
-                ],
-                "summary": "Atualizar Dados Bancários.",
-                "parameters": [
-                    {
-                        "description": "Identificador da proposta para ser buscado os dados bancários.",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.BuscarPropostaDb"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/insscp/simulacao/": {
-            "post": {
-                "description": "Realiza simulação de valores disponíveis para empréstimo de INSSCPCP.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "INSSCP"
-                ],
-                "summary": "Realizar simulação.",
-                "parameters": [
-                    {
-                        "description": "Dados necessários para a realização da simulação e modo de processamento(caso Assync seja passado como true, o processo será executado em fila).",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SimulacaoINSSCPFrontendInput"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.JRPCResponse"
                         }
                     }
                 }
@@ -1577,426 +249,8 @@ const docTemplate = `{
                 }
             }
         },
-        "config.CreditoPessoalEnvVars": {
-            "type": "object",
-            "properties": {
-                "dataInclusaoCobranca": {
-                    "description": "Id da data de inclusão de propostas",
-                    "type": "integer"
-                },
-                "dbStatusCobrancaEmitida": {
-                    "description": "Status cobrança emitida",
-                    "type": "integer"
-                },
-                "dbStatusPendenteEmissaoCobranca": {
-                    "description": "Status pendente geração de cobrança",
-                    "type": "integer"
-                },
-                "dbStatusPendenteGeracaoCobranca": {
-                    "description": "Status pendente emissão de cobrança",
-                    "type": "integer"
-                },
-                "maxPrazo": {
-                    "description": "Prazo máximo de parcelamento",
-                    "type": "integer"
-                },
-                "multiplasCobrancas": {
-                    "description": "Define se vai utilizar ou não o modo de múltiplas cobranças para a geração de cobranças.",
-                    "type": "boolean"
-                }
-            }
-        },
-        "config.CreditoTrabalhadorEnvVars": {
-            "type": "object",
-            "properties": {
-                "convenio": {
-                    "description": "Convênio utilizado nas simulações",
-                    "type": "integer"
-                },
-                "dataCcbAssinada": {
-                    "description": "Id de data CCB assinada",
-                    "type": "integer"
-                },
-                "dataCcbFinalizada": {
-                    "description": "Id de data CCB finalizada",
-                    "type": "integer"
-                },
-                "dataCcbGerada": {
-                    "description": "Id de data CCB gerada",
-                    "type": "integer"
-                },
-                "dataCedida": {
-                    "description": "Id de data proposta cedida",
-                    "type": "integer"
-                },
-                "dataDadosBancariosIncorreto": {
-                    "description": "Id de data dados bancários incorretos",
-                    "type": "integer"
-                },
-                "dataFinalizacao": {
-                    "description": "Id de data finalização",
-                    "type": "integer"
-                },
-                "dataLiberacao": {
-                    "description": "Id de data liberação",
-                    "type": "integer"
-                },
-                "dataPropostaAprovada": {
-                    "description": "Id de data proposta aprovada",
-                    "type": "integer"
-                },
-                "dataPropostaCancelada": {
-                    "description": "Id de data proposta cancelada",
-                    "type": "integer"
-                },
-                "dataPropostaPaga": {
-                    "description": "Id de data proposta paga",
-                    "type": "integer"
-                },
-                "dataUsuarioNaoAutorizado": {
-                    "description": "Id de data usuário não autorizado",
-                    "type": "integer"
-                },
-                "dbStatusAguardandoCedida": {
-                    "description": "Status proposta aguardando cedida",
-                    "type": "integer"
-                },
-                "dbStatusAprovada": {
-                    "description": "Status proposta aprovada",
-                    "type": "integer"
-                },
-                "dbStatusCancelada": {
-                    "description": "Status proposta cancelada",
-                    "type": "integer"
-                },
-                "dbStatusCedida": {
-                    "description": "Status proposta cedida",
-                    "type": "integer"
-                },
-                "dbStatusPagaECedida": {
-                    "description": "Status proposta paga e cedida",
-                    "type": "integer"
-                },
-                "dbStatusPendente": {
-                    "description": "Status proposta pendente",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCobranca": {
-                    "description": "Status proposta pendente cobrança",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCancelamento": {
-                    "description": "Status proposta pendente cancelamento",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCcb": {
-                    "description": "Status proposta pendente geração de CCB",
-                    "type": "integer"
-                },
-                "dbStatusPendenteDadosBancarios": {
-                    "description": "Status proposta pendente dados bancários",
-                    "type": "integer"
-                },
-                "dbStatusPropostaAguardandoLiberacao": {
-                    "description": "Status proposta aguardando liberação",
-                    "type": "integer"
-                },
-                "dbStatusPropostaFinalizada": {
-                    "description": "Status proposta finalizada",
-                    "type": "integer"
-                },
-                "dbStatusPropostaLiberada": {
-                    "description": "Status proposta liberada",
-                    "type": "integer"
-                },
-                "dbStatusPropostaPaga": {
-                    "description": "Status proposta paga",
-                    "type": "integer"
-                },
-                "vinculoExpiracao": {
-                    "description": "Tempo(em dias) que um vínculo é considearado expirado a partir de sua criação.",
-                    "type": "integer"
-                }
-            }
-        },
-        "config.FgtsEnvVars": {
-            "type": "object",
-            "properties": {
-                "convenio": {
-                    "description": "Id do convênio FGTS",
-                    "type": "integer"
-                },
-                "dataCcbAssinada": {
-                    "description": "Id da data CCB assinada",
-                    "type": "integer"
-                },
-                "dataCcbFinalizada": {
-                    "description": "Id da data CCB finalizada",
-                    "type": "integer"
-                },
-                "dataCcbGerada": {
-                    "description": "Id da data CCB gerada",
-                    "type": "integer"
-                },
-                "dataCedida": {
-                    "description": "Id da data proposta cedida cedida",
-                    "type": "integer"
-                },
-                "dataDadosBancariosIncorreto": {
-                    "description": "Id da data dados bancários incorreto",
-                    "type": "integer"
-                },
-                "dataLiberacao": {
-                    "description": "Id da data liberação",
-                    "type": "integer"
-                },
-                "dataPropostaAprovada": {
-                    "description": "Id da data proposta aprovada",
-                    "type": "integer"
-                },
-                "dataPropostaCancelada": {
-                    "description": "Id da data proposta cancelada",
-                    "type": "integer"
-                },
-                "dataPropostaEstornada": {
-                    "description": "Id da data proposta estornada",
-                    "type": "integer"
-                },
-                "dataPropostaPaga": {
-                    "description": "Id da data proposta paga",
-                    "type": "integer"
-                },
-                "dataSolicitacaoTrava": {
-                    "description": "Id da data solicitação de trava",
-                    "type": "integer"
-                },
-                "dataUsuarioNaoAutorizado": {
-                    "description": "Id da data usuário não autorizado",
-                    "type": "integer"
-                },
-                "dbStatusAguardandoCedida": {
-                    "description": "Status proposta aguardando cedida",
-                    "type": "integer"
-                },
-                "dbStatusAprovada": {
-                    "description": "Status proposta aprovada",
-                    "type": "integer"
-                },
-                "dbStatusCancelada": {
-                    "description": "Status proposta cancelada",
-                    "type": "integer"
-                },
-                "dbStatusCedida": {
-                    "description": "Status proposta cedida",
-                    "type": "integer"
-                },
-                "dbStatusPagaECedida": {
-                    "description": "Status proposta paga e cedida",
-                    "type": "integer"
-                },
-                "dbStatusPendente": {
-                    "description": "Status proposta pendente",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCobranca": {
-                    "description": "Status proposta pendente cobrança",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCancelamento": {
-                    "description": "Status proposta pendente cancelamento",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCcb": {
-                    "description": "Status proposta pendente geração de CCB",
-                    "type": "integer"
-                },
-                "dbStatusPendenteDadosBancarios": {
-                    "description": "Status proposta pendente dados bancários",
-                    "type": "integer"
-                },
-                "dbStatusPropostaEstornada": {
-                    "description": "Status proposta estornada",
-                    "type": "integer"
-                },
-                "dbStatusPropostaLiberada": {
-                    "description": "Status proposta liberada",
-                    "type": "integer"
-                },
-                "dbStatusPropostaPaga": {
-                    "description": "Status proposta paga",
-                    "type": "integer"
-                },
-                "dbStatusTravaSolicitada": {
-                    "description": "Status trava de saldo solicitada",
-                    "type": "integer"
-                },
-                "dbStatusValidandoDadosBAncarios": {
-                    "description": "Status proposta em validação de dados bancários",
-                    "type": "integer"
-                },
-                "simulacaoStatusAderirSaqueFgts": {
-                    "description": "Status simulacao cliente não aderiu ao saldo FGTS",
-                    "type": "integer"
-                },
-                "simulacaoStatusAutorizarBanco": {
-                    "description": "Status simulacao banco não autorizado a consultar o saldo",
-                    "type": "integer"
-                },
-                "simulacaoStatusErroDeSimulacao": {
-                    "description": "Status simulacao erro padrão",
-                    "type": "integer"
-                },
-                "simulacaoStatusSaldoLiberado": {
-                    "description": "Status simulacao saldo liberado",
-                    "type": "integer"
-                },
-                "simulacaoStatusSemSaldo": {
-                    "description": "Status simulacao cliente não possui saldo",
-                    "type": "integer"
-                }
-            }
-        },
-        "config.GlobalEnvVars": {
+        "config.EnvVars": {
             "type": "object"
-        },
-        "config.InsscpEnvVars": {
-            "type": "object",
-            "properties": {
-                "convenio": {
-                    "description": "Convênio utilizado nas simulações",
-                    "type": "integer"
-                },
-                "dataCcbAssinada": {
-                    "description": "Id de data CCB assinada",
-                    "type": "integer"
-                },
-                "dataCcbFinalizada": {
-                    "description": "Id de data CCB finalizada",
-                    "type": "integer"
-                },
-                "dataCcbGerada": {
-                    "description": "Id de data CCB gerada",
-                    "type": "integer"
-                },
-                "dataCedida": {
-                    "description": "Id de data proposta cedida",
-                    "type": "integer"
-                },
-                "dataDadosBancariosIncorreto": {
-                    "description": "Id de data dados bancários incorretos",
-                    "type": "integer"
-                },
-                "dataFinalizacao": {
-                    "description": "Id de data finalização",
-                    "type": "integer"
-                },
-                "dataLiberacao": {
-                    "description": "Id de data liberação",
-                    "type": "integer"
-                },
-                "dataPropostaAprovada": {
-                    "description": "Id de data proposta aprovada",
-                    "type": "integer"
-                },
-                "dataPropostaCancelada": {
-                    "description": "Id de data proposta cancelada",
-                    "type": "integer"
-                },
-                "dataPropostaPaga": {
-                    "description": "Id de data proposta paga",
-                    "type": "integer"
-                },
-                "dataUsuarioNaoAutorizado": {
-                    "description": "Id de data usuário não autorizado",
-                    "type": "integer"
-                },
-                "dbStatusAguardandoCedida": {
-                    "description": "Status proposta aguardando cedida",
-                    "type": "integer"
-                },
-                "dbStatusAprovada": {
-                    "description": "Status proposta aprovada",
-                    "type": "integer"
-                },
-                "dbStatusCancelada": {
-                    "description": "Status proposta cancelada",
-                    "type": "integer"
-                },
-                "dbStatusCedida": {
-                    "description": "Status proposta cedida",
-                    "type": "integer"
-                },
-                "dbStatusPagaECedida": {
-                    "description": "Status proposta paga e cedida",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCobranca": {
-                    "description": "Status proposta pendente cobrança",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCancelamento": {
-                    "description": "Status proposta pendente cancelamento",
-                    "type": "integer"
-                },
-                "dbStatusPendenteCcb": {
-                    "description": "Status proposta pendente geração de CCB",
-                    "type": "integer"
-                },
-                "dbStatusPendenteDadosBancarios": {
-                    "description": "Status proposta pendente dados bancários",
-                    "type": "integer"
-                },
-                "dbStatusPropostaAguardandoLiberacao": {
-                    "description": "Status proposta aguardando liberação",
-                    "type": "integer"
-                },
-                "dbStatusPropostaFinalizada": {
-                    "description": "DbStatusPendente                    int ` + "`" + `json:\"dbStatusPendente\"` + "`" + `                    //Status proposta pendente",
-                    "type": "integer"
-                },
-                "dbStatusPropostaLiberada": {
-                    "description": "Status proposta liberada",
-                    "type": "integer"
-                },
-                "dbStatusPropostaPaga": {
-                    "description": "Status proposta paga",
-                    "type": "integer"
-                },
-                "dbStatusValidandoDadosBancarios": {
-                    "description": "Status proposta em processo de validação de  dados bancários",
-                    "type": "integer"
-                },
-                "simulacaoStatusSaldoLiberado": {
-                    "description": "Status simulação saldo liberado",
-                    "type": "integer"
-                }
-            }
-        },
-        "helpers.ErrValidation": {
-            "type": "object",
-            "properties": {
-                "cMensagem": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "errors": {
-                    "$ref": "#/definitions/helpers.FieldErr"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "helpers.FieldErr": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
-            }
         },
         "models.APIError": {
             "type": "object",
@@ -2059,99 +313,41 @@ const docTemplate = `{
                 },
                 "msg": {
                     "type": "string"
-                },
-                "parametros": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Parametros"
-                    }
                 }
             }
         },
-        "models.CobrancaFrontEnd": {
+        "models.CancelarCobrancaFrontendInput": {
             "type": "object",
             "required": [
-                "IdProposta"
+                "id_proposta",
+                "id_proposta_parcela",
+                "numero_acompanhamento",
+                "numero_ccb",
+                "url_webhook"
             ],
             "properties": {
-                "Ccb": {
+                "codigoLiquidacao": {
                     "type": "string"
                 },
-                "DtValidade": {
+                "id_convenio": {
+                    "type": "integer"
+                },
+                "id_proposta": {
+                    "type": "integer"
+                },
+                "id_proposta_parcela": {
+                    "type": "integer"
+                },
+                "id_securitizadora": {
+                    "type": "integer"
+                },
+                "numero_acompanhamento": {
                     "type": "string"
                 },
-                "IdEsteira": {
+                "numero_ccb": {
                     "type": "integer"
                 },
-                "IdProposta": {
-                    "type": "integer"
-                },
-                "Nome": {
-                    "type": "string"
-                },
-                "NumeroAcompanhamento": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.BuscarPropostaDb": {
-            "type": "object",
-            "required": [
-                "IdProposta"
-            ],
-            "properties": {
-                "IdProposta": {
-                    "type": "integer"
-                }
-            }
-        },
-        "models.BuscarPropostaFrontend": {
-            "type": "object",
-            "properties": {
-                "IdProposta": {
-                    "type": "integer"
-                },
-                "NumeroAcompanhamento": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.CancelamentoCreditoTrabalhadorFrontendInput": {
-            "type": "object",
-            "required": [
-                "idProposta",
-                "motivoExclusao"
-            ],
-            "properties": {
-                "idProposta": {
-                    "type": "integer"
-                },
-                "motivoExclusao": {
-                    "type": "integer"
-                },
-                "numeroAcompanhamento": {
-                    "type": "string"
-                },
-                "numeroContrato": {
-                    "type": "integer"
-                }
-            }
-        },
-        "models.CancelarPropostaPorCodigoFrontend": {
-            "type": "object",
-            "required": [
-                "IdProposta",
-                "NumeroAcompanhamento",
-                "TextoMotivoCancelamento"
-            ],
-            "properties": {
-                "IdProposta": {
-                    "type": "integer"
-                },
-                "NumeroAcompanhamento": {
-                    "type": "string"
-                },
-                "TextoMotivoCancelamento": {
+                "url_webhook": {
                     "type": "string"
                 }
             }
@@ -2191,29 +387,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ConsultaBoletoPix": {
-            "type": "object",
-            "properties": {
-                "dtCredito": {
-                    "type": "string"
-                },
-                "dtExpiracao": {
-                    "type": "string"
-                },
-                "dtVencimento": {
-                    "type": "string"
-                },
-                "emv": {
-                    "type": "string"
-                },
-                "imagem": {
-                    "type": "string"
-                },
-                "liquidacao": {
-                    "type": "boolean"
-                }
-            }
-        },
         "models.ConsultaBoletoQrCode": {
             "type": "object",
             "properties": {
@@ -2228,17 +401,26 @@ const docTemplate = `{
         "models.ConsultaCobrancaFrontEndInput": {
             "type": "object",
             "required": [
-                "IdProposta"
+                "id_convenio",
+                "id_proposta",
+                "id_securitizadora",
+                "numero_acompanhamento"
             ],
             "properties": {
-                "IdProposta": {
+                "id_convenio": {
                     "type": "integer"
                 },
-                "Parcelas": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "id_proposta": {
+                    "type": "integer"
+                },
+                "id_securitizadora": {
+                    "type": "integer"
+                },
+                "numero_acompanhamento": {
+                    "type": "string"
+                },
+                "numero_parcela": {
+                    "type": "integer"
                 }
             }
         },
@@ -2348,7 +530,7 @@ const docTemplate = `{
                 "pix": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ConsultaBoletoPix"
+                        "$ref": "#/definitions/models.ConsultaPix"
                     }
                 },
                 "situacao": {
@@ -2440,97 +622,83 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CreditoTrabalhadorConsultarVinculosFrontend": {
+        "models.ConsultaPix": {
             "type": "object",
-            "required": [
-                "cpfTrabalhador",
-                "numeroAutorizacao"
-            ],
             "properties": {
-                "cpfTrabalhador": {
+                "dtCredito": {
                     "type": "string"
                 },
-                "numeroAutorizacao": {
-                    "type": "integer"
-                },
-                "webhook": {
+                "dtExpiracao": {
                     "type": "string"
-                }
-            }
-        },
-        "models.DigitacaoCreditoTrabalhadorFrontendInput": {
-            "type": "object",
-            "required": [
-                "IdProposta"
-            ],
-            "properties": {
-                "Assync": {
+                },
+                "dtVencimento": {
+                    "type": "string"
+                },
+                "emv": {
+                    "type": "string"
+                },
+                "imagem": {
+                    "type": "string"
+                },
+                "liquidacao": {
                     "type": "boolean"
-                },
-                "IdProposta": {
-                    "type": "integer"
-                },
-                "urlCancelamento": {
-                    "type": "string"
-                },
-                "webhook": {
-                    "type": "string"
                 }
             }
         },
-        "models.DigitacaoFGTSFrontendInput": {
+        "models.GerarCobrancaFrontendInput": {
             "type": "object",
             "required": [
-                "IdProposta"
+                "data_expiracao",
+                "data_vencimento",
+                "id_forma_cobranca",
+                "id_proposta",
+                "id_proposta_parcela",
+                "numero_acompanhamento",
+                "numero_ccb",
+                "numero_parcela",
+                "token",
+                "url_webhook"
             ],
             "properties": {
-                "Assync": {
-                    "type": "boolean"
-                },
-                "IdProposta": {
-                    "type": "integer"
-                },
-                "idCliente": {
-                    "type": "integer"
-                },
-                "urlCancelamento": {
+                "data_expiracao": {
                     "type": "string"
                 },
-                "webhook": {
+                "data_vencimento": {
                     "type": "string"
+                },
+                "id_convenio": {
+                    "type": "integer"
+                },
+                "id_forma_cobranca": {
+                    "type": "integer"
+                },
+                "id_proposta": {
+                    "type": "integer"
+                },
+                "id_proposta_parcela": {
+                    "type": "integer"
+                },
+                "id_securitizadora": {
+                    "type": "integer"
+                },
+                "numero_acompanhamento": {
+                    "type": "string"
+                },
+                "numero_ccb": {
+                    "type": "integer"
+                },
+                "numero_parcela": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "url_webhook": {
+                    "type": "string"
+                },
+                "valor_parcela": {
+                    "type": "number"
                 }
-            }
-        },
-        "models.DigitacaoINSSCPFrontendInput": {
-            "type": "object",
-            "required": [
-                "IdProposta"
-            ],
-            "properties": {
-                "Assync": {
-                    "type": "boolean"
-                },
-                "IdProposta": {
-                    "type": "integer"
-                },
-                "urlCancelamento": {
-                    "type": "string"
-                },
-                "webhook": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.JRPCResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "error": {},
-                "id": {},
-                "jsonrpc": {
-                    "type": "string"
-                },
-                "result": {}
             }
         },
         "models.Message": {
@@ -2552,353 +720,6 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
-        },
-        "models.Parametros": {
-            "type": "object",
-            "properties": {
-                "nome": {
-                    "type": "string"
-                },
-                "valor": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.SimulacaoCreditoPessoalFrontendInput": {
-            "type": "object",
-            "required": [
-                "IdSimulacao",
-                "PeriodicidadeLabel",
-                "Tabelas",
-                "TipoPessoa"
-            ],
-            "properties": {
-                "Assync": {
-                    "type": "boolean"
-                },
-                "FluxoIrregular": {
-                    "type": "boolean"
-                },
-                "IOF": {
-                    "type": "number"
-                },
-                "IdSimulacao": {
-                    "type": "integer"
-                },
-                "NroDiasAcrescimo": {
-                    "type": "integer"
-                },
-                "NroDiasIntervalo": {
-                    "type": "integer"
-                },
-                "PeriodicidadeLabel": {
-                    "type": "string"
-                },
-                "Tabelas": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/models.TabelaCreditoPessoal"
-                    }
-                },
-                "TipoPessoa": {
-                    "type": "integer",
-                    "enum": [
-                        1,
-                        2
-                    ]
-                },
-                "tipoSimulacao": {
-                    "type": "integer",
-                    "enum": [
-                        1,
-                        2,
-                        3,
-                        4
-                    ]
-                },
-                "webhook": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.SimulacaoCreditoTrabalhadorFrontendInput": {
-            "type": "object",
-            "required": [
-                "IdSimulacao",
-                "Tabelas"
-            ],
-            "properties": {
-                "Assync": {
-                    "type": "boolean"
-                },
-                "IdSimulacao": {
-                    "type": "integer"
-                },
-                "Tabelas": {
-                    "description": "NroDiasAcrescimo int                        ` + "`" + `json:\"NroDiasAcrescimo,omitempty\"` + "`" + `\nTipoPessoa       int                        ` + "`" + `json:\"TipoPessoa\" validate:\"required,oneof=1 2\"` + "`" + `",
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/models.TabelaCreditoTrabalhador"
-                    }
-                },
-                "webhook": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.SimulacaoFGTSFrontendInput": {
-            "type": "object",
-            "required": [
-                "CpfTrabalhador",
-                "DtAniversario",
-                "IdCliente",
-                "IdSimulacao",
-                "IdUsuario",
-                "tabelas"
-            ],
-            "properties": {
-                "Assync": {
-                    "type": "boolean"
-                },
-                "CpfTrabalhador": {
-                    "type": "string"
-                },
-                "DtAniversario": {
-                    "type": "string"
-                },
-                "IdCliente": {
-                    "type": "integer"
-                },
-                "IdCorban": {
-                    "type": "integer"
-                },
-                "IdSimulacao": {
-                    "type": "integer"
-                },
-                "IdUsuario": {
-                    "type": "integer"
-                },
-                "MaxPeriodo": {
-                    "type": "integer"
-                },
-                "Periodo": {
-                    "type": "integer"
-                },
-                "VlrEmprestimo": {
-                    "type": "number"
-                },
-                "tabelas": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/models.TabelaFGTS"
-                    }
-                },
-                "webhook": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.SimulacaoINSSCPFrontendInput": {
-            "type": "object",
-            "required": [
-                "IdSimulacao",
-                "Tabelas",
-                "TipoPessoa"
-            ],
-            "properties": {
-                "Assync": {
-                    "type": "boolean"
-                },
-                "IdSimulacao": {
-                    "type": "integer"
-                },
-                "NroDiasAcrescimo": {
-                    "type": "integer"
-                },
-                "Tabelas": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "$ref": "#/definitions/models.TabelaINSSCP"
-                    }
-                },
-                "TipoPessoa": {
-                    "type": "integer",
-                    "enum": [
-                        1,
-                        2
-                    ]
-                },
-                "webhook": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.TabelaCreditoPessoal": {
-            "type": "object",
-            "required": [
-                "IdTabela"
-            ],
-            "properties": {
-                "IdTabela": {
-                    "type": "integer"
-                },
-                "IdempotencyKey": {
-                    "type": "string"
-                },
-                "PercJurosMaximo": {
-                    "type": "number"
-                },
-                "PercJurosMinimo": {
-                    "type": "number"
-                },
-                "Prazo": {
-                    "type": "integer"
-                },
-                "Prazos": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "VlrParcela": {
-                    "type": "number"
-                },
-                "VlrSolicitado": {
-                    "type": "number"
-                },
-                "VlrTac": {
-                    "type": "number"
-                },
-                "idTabelaBeneficio": {
-                    "type": "integer"
-                },
-                "idTabelaSeguro": {
-                    "type": "integer"
-                },
-                "intervaloTaxa": {
-                    "type": "number"
-                },
-                "percJurosNegociado": {
-                    "type": "number"
-                },
-                "percTac": {
-                    "type": "number"
-                },
-                "tipoTac": {
-                    "type": "string",
-                    "enum": [
-                        "P",
-                        "V"
-                    ]
-                },
-                "tolerancia": {
-                    "type": "number"
-                },
-                "vlrBeneficio": {
-                    "type": "number"
-                },
-                "vlrSeguro": {
-                    "type": "number"
-                }
-            }
-        },
-        "models.TabelaCreditoTrabalhador": {
-            "type": "object",
-            "required": [
-                "IdTabela",
-                "ValorLiberado"
-            ],
-            "properties": {
-                "IdTabela": {
-                    "type": "integer"
-                },
-                "Prazos": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "ValorLiberado": {
-                    "type": "number"
-                },
-                "ValorTaxaMensal": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "idTabelaSeguro": {
-                    "type": "integer"
-                },
-                "valorSeguro": {
-                    "type": "number"
-                }
-            }
-        },
-        "models.TabelaFGTS": {
-            "type": "object",
-            "required": [
-                "IdTabela"
-            ],
-            "properties": {
-                "IdTabela": {
-                    "type": "integer"
-                },
-                "PercTAC": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "TaxaMensal": {
-                    "type": "number",
-                    "minimum": 0
-                }
-            }
-        },
-        "models.TabelaINSSCP": {
-            "type": "object",
-            "required": [
-                "IdTabela",
-                "VlrSolicitado"
-            ],
-            "properties": {
-                "IdTabela": {
-                    "type": "integer"
-                },
-                "IdempotencyKey": {
-                    "type": "string"
-                },
-                "Prazos": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "VlrSolicitado": {
-                    "type": "number"
-                },
-                "VlrTac": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "idTabelaBeneficio": {
-                    "type": "integer"
-                },
-                "idTabelaSeguro": {
-                    "type": "integer"
-                },
-                "percJurosNegociado": {
-                    "type": "number",
-                    "minimum": 0
-                },
-                "vlrBeneficio": {
-                    "type": "number"
-                },
-                "vlrSeguro": {
-                    "type": "number"
-                }
-            }
         }
     }
 }`
@@ -2909,8 +730,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "bmp-fgts.Confiapay.com.br",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "BMP Microservice",
-	Description:      "Microserviço de acesso aos serviços bancários do Banco BMP, permite simulação, gravação e consulta de propostas.\\n Produtos suportados: FGTS, Crédito Pessoal INSS, Crédito CLT. \\n Para mais informações referentes aos dados a serem enviados, consulte a aba \"model\" na seção de body dos endpoints.",
+	Title:            "BMP Cobrança",
+	Description:      "Microserviço de acesso aos serviços de geração de cobranças do BMP. \\n Para mais informações referentes aos dados a serem enviados, consulte a aba \"model\" na seção de body dos endpoints.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

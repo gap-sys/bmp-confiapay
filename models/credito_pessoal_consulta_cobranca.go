@@ -1,5 +1,7 @@
 package models
 
+import "cobranca-bmp/helpers"
+
 type ConsultaCobrancaResponse struct {
 	Msg                     string                    `json:"msg"`
 	HasError                bool                      `json:"hasError"`
@@ -95,13 +97,36 @@ type ConsultaCobrancaLancamento struct {
 }
 
 type ConsultaCobrancaFrontEndInput struct {
-	BuscarPropostaDb
-	NumeroAcompanhamento string
-	Convenio             int
-	Parcelas             []int `json:"Parcelas"`
+	IdProposta           int    `json:"id_proposta" validate:"required"`
+	NumeroAcompanhamento string `json:"numero_acompanhamento" validate:"required"`
+	IdConvenio           int    `json:"id_convenio" validate:"required"`
+	IdSecuritizadora     int    `json:"id_securitizadora" validate:"required"`
+	Parcela              int    `json:"numero_parcela"`
 }
 
 func (c *ConsultaCobrancaFrontEndInput) Validate() error {
-	return c.BuscarPropostaDb.Validate()
+	var APIError APIError
+	var msgs string
+	var messageErrors = make([]APIMessage, 0)
+	err := helpers.StructValidate(c)
+	if err != nil {
+		errs, okErr := err.(*helpers.ErrValidation)
+		if okErr {
+			for _, message := range errs.GetAllMessages() {
+				messageErrors = append(messageErrors, APIMessage{
+					Code:        "",
+					Description: message,
+				})
+				msgs += message + "\n"
+			}
+
+			APIError.HasError = true
+			APIError.Messages = messageErrors
+			APIError.Msg = msgs
+
+		}
+		return APIError
+	}
+	return nil
 
 }

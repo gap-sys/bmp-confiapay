@@ -2,7 +2,6 @@ package models
 
 import (
 	"cobranca-bmp/config"
-	"fmt"
 	"time"
 )
 
@@ -64,12 +63,4 @@ func (w *WebhookTaskData) SetTry() {
 	w.Delay += config.WEBHOOK_DELAY
 	w.Retries--
 
-}
-
-func GenerateCCBURL(numeroAcompanhamento, codParametro string) string {
-	return fmt.Sprintf("%s/%s?impressao=S&tipo=ccb&code=%s&Integracao=%s&copias=1", config.CCB_URL, "Imprimir", numeroAcompanhamento, codParametro)
-}
-
-func GenerateCCBCreditoTrabalhadorURL(numeroAcompanhamento, codParametro string) string {
-	return fmt.Sprintf("%s/ImprimirCCB?Code=%s&integracao=%s", config.CCB_URL, numeroAcompanhamento, codParametro)
 }

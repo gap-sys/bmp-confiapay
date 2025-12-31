@@ -4,10 +4,14 @@ import (
 	"cobranca-bmp/cache"
 	"cobranca-bmp/client"
 	"cobranca-bmp/config"
+	"cobranca-bmp/db"
 	"cobranca-bmp/handlers"
 	"cobranca-bmp/helpers"
+	"cobranca-bmp/logfile"
+	"cobranca-bmp/models"
 	"cobranca-bmp/monitoring"
 	"cobranca-bmp/queue"
+	"cobranca-bmp/repository"
 	"cobranca-bmp/service"
 	"context"
 	"log"
@@ -84,12 +88,12 @@ func main() {
 
 	//Instanciando loggers
 	rmqLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
-	//dbLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
+	dbLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
 	redisLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
 	clientLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
 	elegibilidadeServiceLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
 	webhookLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelDebug, loc))
-	//logFileLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
+	logFileLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
 	fiberLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))
 	slog.SetDefault(slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc)))
 
@@ -99,38 +103,40 @@ func main() {
 	}()
 
 	//Se conectando ao banco de dados
-	//	database, err := db.Open(config.DB_URL)
-	//if err != nil {
-	//	log.Fatalf("Erro ao se conectar com o banco de dados: %s", err.Error())
-	//}
+	database, err := db.Open(config.DB_URL)
+	if err != nil {
+		log.Fatalf("Erro ao se conectar com o banco de dados: %s", err.Error())
+	}
 
-	/*
-		//Instanciando um objeto que gerenciará o banco de dados e o injetará nos repositórios em caso de reconexão.
-		dbManager := db.NewDBManager(ctx, database, "postgres_Confiapay", loc, dbLogger, config.NewDBPoolConfigFromEnv(),
-			propostaCreditoPessoalRepo)
+	//Instanciando repositórios
+	parcelaRepo := repository.NewParcelaRepo(ctx, database, dbLogger, loc)
 
-		var prometheusDbCollectors = monitoring.PrometheusCollectors{
-			UtilizationPercent: dbPoolUtilizationPercent,
-			IddlePercent:       dbPoolIddlePercent,
-			AlertNum:           alertsMetric,
-		}
+	//Instanciando um objeto que gerenciará o banco de dados e o injetará nos repositórios em caso de reconexão.
+	dbManager := db.NewDBManager(ctx, database, "postgres_Confiapay", loc, dbLogger, config.NewDBPoolConfigFromEnv(),
+		parcelaRepo)
 
-		//Instanciando e startando um monitor de conexões do banco de dados.
-		poolMonitor := monitoring.NewPoolMonitor(dbManager, loc, dbLogger, &prometheusDbCollectors)
-		go poolMonitor.Start(ctx, config.DB_POOL_MONITORING_INTERVAL)
+	var prometheusDbCollectors = monitoring.PrometheusCollectors{
+		UtilizationPercent: dbPoolUtilizationPercent,
+		IddlePercent:       dbPoolIddlePercent,
+		AlertNum:           alertsMetric,
+	}
 
-		//shutdown do banco de dados
-		defer dbManager.Close()
+	//Instanciando e startando um monitor de conexões do banco de dados.
+	poolMonitor := monitoring.NewPoolMonitor(dbManager, loc, dbLogger, &prometheusDbCollectors)
+	go poolMonitor.Start(ctx, config.DB_POOL_MONITORING_INTERVAL)
 
-		//Instanciando um serviço de atualização de propostas
-		updateCreditoPessoalService := service.NewUpdateService(propostaCreditoPessoalRepo, dbLogger, loc, config.CREDITO_PESSOAL_CONVENIO)
+	//shutdown do banco de dados
+	defer dbManager.Close()
 
-		//Instanciando um handler de arquivos
-		fileLoggerChan := make(chan models.DbLogfileData)
-		logFileHandler := logfile.NewLogFileHandler(ctx, logFileLogger, fileLoggerChan, loc, updateCreditoPessoalService)
+	//Instanciando um serviço de atualização de propostas
+	updateCreditoPessoalService := service.NewUpdateService(dbLogger, loc, parcelaRepo)
 
-		//go logFileHandler.Consume()
-		//defer logFileHandler.Close()*/
+	//Instanciando um handler de arquivos
+	fileLoggerChan := make(chan models.DbLogfileData)
+	logFileHandler := logfile.NewLogFileHandler(ctx, logFileLogger, fileLoggerChan, loc, updateCreditoPessoalService)
+
+	go logFileHandler.Consume()
+	defer logFileHandler.Close()
 
 	//Configurando e startando o redis
 	redis, err := cache.NewRedis(config.REDIS_URL, redisLogger, ctx, loc, nil, config.REDIS_DBCH, nil)
@@ -152,8 +158,9 @@ func main() {
 	//Instanciando clients que serão utilizado pelos services que precisam chamar a API do BMP.
 	cobrancaClient := client.NewCobrancaClient(ctx, loc, redis, clientLogger, config.BASE_URL, config.AUTH_URL)
 
-	//Instanciando serviços de cobrança
-	cobrancaService := service.NewCobrancaService(ctx, elegibilidadeServiceLogger, loc, cobrancaClient, webhookService, redis)
+	//Instanciando serviços
+	updateService := service.NewUpdateService(dbLogger, loc, parcelaRepo)
+	cobrancaService := service.NewCobrancaService(ctx, elegibilidadeServiceLogger, loc, cobrancaClient, webhookService, redis, parcelaRepo, *updateService)
 
 	rmq, err := queue.NewRMQ(
 		ctx, loc, redis, rmqLogger,

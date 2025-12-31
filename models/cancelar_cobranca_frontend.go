@@ -3,11 +3,14 @@ package models
 import "cobranca-bmp/helpers"
 
 type CancelarCobrancaFrontendInput struct {
-	IdProposta           int    `json:"idProposta" validate:"required"`
-	NumeroAcompanhamento string `json:"numeroAcompanhamento"`
-	CodigoLiquidacao     string `json:"codigoLiquidacao"`
-	UrlWebhook           string `json:"urlWebhook"`
-	Parcelas             []int  `json:"parcelas"`
+	IdPropostaParcela    int    `json:"id_proposta_parcela" validate:"required"`
+	IdProposta           int    `json:"id_proposta" validate:"required"`
+	NumeroAcompanhamento string `json:"numero_acompanhamento" validate:"required"`
+	CodigoLiquidacao     string `json:"codigo_liquidacao" validate:"required" `
+	NumeroCCB            int    `json:"numero_ccb" validate:"required"`
+	UrlWebhook           string `json:"url_webhook" validate:"required"`
+	IdConvenio           int    `json:"id_convenio"`
+	IdSecuritizadora     int    `json:"id_securitizadora"`
 }
 
 func (c CancelarCobrancaFrontendInput) Validate() error {

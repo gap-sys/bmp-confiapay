@@ -73,7 +73,7 @@ func (cc *ConfigController) SetQOS() fiber.Handler {
 //	@Produce		json
 //	@Param			body	body        config.APIDBPoolConfig	true  "Parâmetros do banco de dados."
 //	@Success		200		{object}	map[string]any
-//	@Failure		422		{object}	models.JRPCResponse
+//	@Failure		422		{object}	map[string]any
 //	@Router			/config/db/set [post]
 func (cc *ConfigController) ReconfigDB() fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -110,13 +110,13 @@ func (cc *ConfigController) ReconfigDB() fiber.Handler {
 //	@Tags			Config
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body	config.GlobalEnvVars	true  "Variáveis que se deseja alterar."
+//	@Param			body	body	config.EnvVars	true  "Variáveis que se deseja alterar."
 //	@Success		200		{object}	map[string]any
-//	@Failure		422		{object}	models.JRPCResponse
+//	@Failure		422		{object}	map[string]string
 //	@Router			/config/env [post]
 func (cc *ConfigController) SetGlobalEnvVars() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var input config.GlobalEnvVars
+		var input config.EnvVars
 		if err := c.BodyParser(&input); err != nil {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": helpers.ParseJsonError(err.Error())})
 		}

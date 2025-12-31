@@ -97,7 +97,7 @@ func (r *RabbitMQ) ConsumeWebhook() {
 /*
 func (r *RabbitMQ) ConsumeDB() {
 	for msg := range r.dbMsgs {
-		var payload models.UpdateDBData
+		var payload models.UpdateDbData
 		if err := json.Unmarshal(msg.Body, &payload); err != nil {
 			var dlqData = models.DLQData{
 				Payload:  payload,

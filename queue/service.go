@@ -10,7 +10,7 @@ type Service interface {
 // dbService é a interface que define os métodos que um serviço de banco de dados deve implementar.
 type dbService interface {
 	Service
-	UpdateAssync(data models.UpdateDBData) (bool, error)
+	UpdateAssync(data models.UpdateDbData) (bool, error)
 }
 
 // WebhookService é a interface que define os métodos que um serviço de webhook deve implementar.

@@ -14,13 +14,15 @@ import (
 
 // Representa um service para as operações de formalização/inclusão e geração de assinaturas para propostas.
 type CobrancalService struct {
-	ctx            context.Context
-	logger         *slog.Logger
-	loc            *time.Location
-	client         CobrancaClient
-	queue          QueueProducer
-	cache          *cache.RedisCache
-	webhookService *WebhookService
+	ctx               context.Context
+	logger            *slog.Logger
+	loc               *time.Location
+	client            CobrancaClient
+	queue             QueueProducer
+	cache             *cache.RedisCache
+	parcelaRepository ParcelaRepository
+	webhookService    *WebhookService
+	updateService     *UpdateService
 }
 
 // Configurando o producer das filas
@@ -38,17 +40,34 @@ func (a *CobrancalService) SetProducer(q any) error {
 }
 
 // Instancia um novo service.
-func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Location, client CobrancaClient, webhookService *WebhookService, cache *cache.RedisCache) *CobrancalService {
+func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Location,
+	client CobrancaClient, webhookService *WebhookService,
+	cache *cache.RedisCache, parcelaRepository ParcelaRepository, updateService *UpdateService) *CobrancalService {
 	return &CobrancalService{
 		ctx:            ctx,
 		logger:         logger,
 		loc:            loc,
 		client:         client,
 		webhookService: webhookService,
+		cache:          cache,
+		updateService:  updateService,
 	}
 }
 
+func (c CobrancalService) Auth(data models.AuthPayload) (string, error) {
+	return c.client.Auth(data)
+}
+
 func (a *CobrancalService) Cobranca(payload models.CobrancaTaskData) (any, string, int, error) {
+	if payload.Token == "" {
+		token, err := a.Auth(payload.AuthPayload)
+		if err != nil {
+			return nil, "", 401, err
+		}
+		payload.Token = token
+
+	}
+
 	switch payload.Status {
 	case config.STATUS_CANCELAR_COBRANCA:
 		return a.CancelarCobranca(payload)
@@ -68,8 +87,6 @@ func (a *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 	var statusCode int
 	var data models.GerarCobrancaResponse
 
-	//a.updateService.UpdatePropostaParcelaFormaCobranca(payload.IdProposta, payload.TipoCobranca, payload.NumeroCCB, false)
-
 	if payload.MultiplasCobrancas {
 
 		data, statusCode, status, errCobrancas = a.GerarCobrancaParcelasMultiplas(payload)
@@ -83,6 +100,10 @@ func (a *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 		return a.HandleErrorCobranca(status, statusCode, *payload, models.NewAPIError("", "Cobrancas não geradas", strconv.Itoa(payload.GerarCobrancaInput.IdProposta)))
 
 	}
+
+	a.updateService.UpdateGeracaoParcela(models.UpdateDbData{
+		GeracaoParcela: &payload.GerarCobrancaInput,
+	})
 
 	if payload.CalledAssync {
 		a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, data, "cobranca service"))
@@ -125,11 +146,6 @@ func (a *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 
 	}
 
-	//	if payload.Origem != 1 && !reprocessamento {
-	//	a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, errAPI, "cobrança crédito pessoal"))
-
-	//	}
-	//helpers.LogError(a.ctx, a.logger, a.loc, "", strconv.Itoa(statusCode), "Erro ao realizar cobrança", errAPI.Error(), errAPI.Result)
 	if payload.CalledAssync {
 		a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, errAPI, "cobranca service"))
 	}
@@ -203,6 +219,16 @@ func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 
 	data, statusCode, status, err := a.client.GerarCobrancaParcelasMultiplas(payloadBMP, payload.Token, payload.IdempotencyKey)
 
+	if status == config.API_STATUS_UNAUTHORIZED {
+		token, authErr := a.Auth(payload.AuthPayload)
+		if authErr != nil {
+			return data, statusCode, status, err
+		}
+		payload.Token = token
+
+		data, statusCode, status, err = a.client.GerarCobrancaParcelasMultiplas(payloadBMP, payload.Token, payload.IdempotencyKey)
+	}
+
 	if err != nil {
 		errAPI, ok := err.(models.APIError)
 		if !ok {
@@ -217,9 +243,19 @@ func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 }
 
 func (a *CobrancalService) CancelarCobranca(payload models.CobrancaTaskData) (any, string, int, error) {
-	idempotencyKey := strconv.Itoa(a.cache.GenID())
 
-	data, statusCode, status, err := a.client.CancelarCobranca(payload.CancelamentoCobranca, payload.Token, idempotencyKey)
+	data, statusCode, status, err := a.client.CancelarCobranca(payload.CancelamentoCobranca, payload.Token, payload.IdempotencyKey)
+
+	if status == config.API_STATUS_UNAUTHORIZED {
+		token, authErr := a.Auth(payload.AuthPayload)
+		if authErr != nil {
+			return data, status, statusCode, err
+		}
+
+		payload.Token = token
+		data, statusCode, status, err = a.client.CancelarCobranca(payload.CancelamentoCobranca, payload.Token, payload.IdempotencyKey)
+	}
+
 	if err != nil {
 		errApi, ok := err.(models.APIError)
 		if !ok {
@@ -232,7 +268,19 @@ func (a *CobrancalService) CancelarCobranca(payload models.CobrancaTaskData) (an
 }
 
 func (a *CobrancalService) ConsultarCobranca(payload models.CobrancaTaskData) (models.ConsultaCobrancaResponse, string, int, error) {
+
 	data, statusCode, status, err := a.client.ConsultarCobranca(payload.ConsultarCobrancaInput, payload.Token, payload.IdempotencyKey)
+
+	if status == config.API_STATUS_UNAUTHORIZED {
+		token, authErr := a.Auth(payload.AuthPayload)
+		if authErr != nil {
+			return data, status, statusCode, err
+		}
+
+		payload.Token = token
+		data, statusCode, status, err = a.client.ConsultarCobranca(payload.ConsultarCobrancaInput, payload.Token, payload.IdempotencyKey)
+	}
+
 	if err != nil {
 		return data, status, statusCode, err
 	}

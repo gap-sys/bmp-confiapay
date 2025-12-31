@@ -15,12 +15,8 @@ import (
 var globalMu sync.Mutex
 var HOMOLOG_LOCAL = false
 
-type EnvVars struct {
-	GlobalEnvVars GlobalEnvVars `json:"global"`
-}
-
 // Representa variáveis de ambiente globais que podem ser alteradas em runtime.
-type GlobalEnvVars struct {
+type EnvVars struct {
 	TimeoutRetries        int           `json:"timeoutRetries"`        //Número de tentativas em caso de timeout
 	TimeoutDelay          int           `json:"timeoutDelay"`          //Delay entre uma tentativa e outra na fila,em caso de timeout
 	DbDelay               int           `json:"dbDelay"`               //Delay entre uma tentativa e outra na fila, em caso de falha ao atualizar o banco de dados
@@ -108,18 +104,10 @@ var (
 	DB_UPDATE_MAX_RETRIES  int64
 	BASE_URL               string
 
-	JWT_AUD                   string
-	JWT_SCOPE                 string
-	JWT_CLIENT_ASSERTION_TYPE string
-	AUTH_URL                  string
-	REDIS_URL                 string
-	REDIS_DBCH                string
-	CCB_URL                   string
-	API_KEY                   string
-	INSSCP_JWT_KEY            string
-	INSSCP_CLIENT_ID          string
-	FGTS_JWT_KEY              string
-	FGTS_CLIENT_ID            string
+	AUTH_URL   string
+	REDIS_URL  string
+	REDIS_DBCH string
+	API_KEY    string
 
 	WEBHOOK_KEY           string
 	WEBHOOK_HASH          string
@@ -148,28 +136,6 @@ const (
 	ERR_INTERNAL_SERVER_STR = "32603"
 )
 
-var (
-	DIGITACAO_ERRO_PADRAO                    string
-	SIMULACAO_ERRO_TIMEOUT                   string
-	DIGITACAO_ERRO_TIMEOUT                   string
-	SIMULACAO_ERRO_AUTH                      string
-	DIGITACAO_ERRO_AUTH                      string
-	DIGITACAO_INTERNAL_SERVER_ERROR          string
-	SIMULACAO_INTERNAL_SERVER_ERROR          string
-	SIMULACAO_ERRO_RATE_LIMIT                string
-	DIGITACAO_ERRO_RATE_LIMIT                string
-	ENVIO_CCB_TIMEOUT                        string
-	ENVIO_CCB_RATE_LIMIT                     string
-	ENVIO_CCB_INTERNAL_SERVER_ERROR          string
-	ENVIO_CCB_AUTH_ERROR                     string
-	ENVIO_CCB_ERRO_PADRAO                    string
-	FINALIZAR_PROPOSTA_TIMEOUT               string
-	FINALIZAR_PROPOSTA_RATE_LIMIT            string
-	FINALIZAR_PROPOSTA_INTERNAL_SERVER_ERROR string
-	FINALIZAR_PROPOSTA_AUTH_ERROR            string
-	FINALIZAR_PROPOSTA_ERRO_PADRAO           string
-)
-
 // Carrega as variáveis de ambiente para o sistema operacional, verificando os arquivos passados em "files".Caso nenhum arquivo seja passado, abrirá o arquivo .env que se encontra na raiz do projeto
 func LoadEnvVar(files ...string) error {
 	err := godotenv.Load(files...)
@@ -190,39 +156,13 @@ func InitializeEnvVar() error {
 	DLQ_EXCHANGE = os.Getenv("DLQ_EXCHANGE")
 	BASE_URL = os.Getenv("BASE_URL")
 	AUTH_URL = os.Getenv("AUTH_URL")
-	CCB_URL = os.Getenv("CCB_URL")
 	RABBITMQ_URL = os.Getenv("RABBITMQ_URL")
-	JWT_AUD = os.Getenv("JWT_AUD")
-	JWT_SCOPE = os.Getenv("JWT_SCOPE")
-	JWT_CLIENT_ASSERTION_TYPE = os.Getenv("JWT_CLIENT_ASSERTION_TYPE")
-	INSSCP_JWT_KEY = os.Getenv("INSSCP_JWT_KEY")
-	INSSCP_CLIENT_ID = os.Getenv("INSSCP_CLIENT_ID")
-	FGTS_JWT_KEY = os.Getenv("FGTS_JWT_KEY")
-	FGTS_CLIENT_ID = os.Getenv("FGTS_CLIENT_ID")
-	INSSCP_CLIENT_ID = os.Getenv("INSSCP_CLIENT_ID")
 	REDIS_URL = os.Getenv("REDIS_URL")
 	REDIS_DBCH = os.Getenv("REDIS_DBCH")
 	API_KEY = os.Getenv("API_KEY")
-	DIGITACAO_ERRO_PADRAO = os.Getenv("DIGITACAO_ERRO_PADRAO")
-	SIMULACAO_ERRO_AUTH = os.Getenv("SIMULACAO_ERRO_AUTH")
-	DIGITACAO_ERRO_AUTH = os.Getenv("DIGITACAO_ERRO_AUTH")
-	DIGITACAO_INTERNAL_SERVER_ERROR = os.Getenv("DIGITACAO_INTERNAL_SERVER_ERROR")
-	SIMULACAO_INTERNAL_SERVER_ERROR = os.Getenv("SIMULACAO_INTERNAL_SERVER_ERROR")
-	SIMULACAO_ERRO_RATE_LIMIT = os.Getenv("SIMULACAO_ERRO_RATE_LIMIT")
-	DIGITACAO_ERRO_RATE_LIMIT = os.Getenv("DIGITACAO_ERRO_RATE_LIMIT")
 	WEBHOOK_KEY = os.Getenv("WEBHOOK_KEY")
 	WEBHOOK_HASH = os.Getenv("WEBHOOK_HASH")
 	WEBHOOK_QUEUE = os.Getenv("WEBHOOK_QUEUE")
-	ENVIO_CCB_TIMEOUT = os.Getenv("ENVIO_CCB_TIMEOUT")
-	ENVIO_CCB_RATE_LIMIT = os.Getenv("ENVIO_CCB_RATE_LIMIT")
-	ENVIO_CCB_INTERNAL_SERVER_ERROR = os.Getenv("ENVIO_CCB_INTERNAL_SERVER_ERROR")
-	ENVIO_CCB_AUTH_ERROR = os.Getenv("ENVIO_CCB_AUTH_ERROR")
-	ENVIO_CCB_ERRO_PADRAO = os.Getenv("ENVIO_CCB_ERRO_PADRAO")
-	FINALIZAR_PROPOSTA_TIMEOUT = os.Getenv("FINALIZAR_PROPOSTA_TIMEOUT")
-	FINALIZAR_PROPOSTA_RATE_LIMIT = os.Getenv("FINALIZAR_PROPOSTA_RATE_LIMIT")
-	FINALIZAR_PROPOSTA_INTERNAL_SERVER_ERROR = os.Getenv("FINALIZAR_PROPOSTA_INTERNAL_SERVER_ERROR")
-	FINALIZAR_PROPOSTA_AUTH_ERROR = os.Getenv("FINALIZAR_PROPOSTA_AUTH_ERROR")
-	FINALIZAR_PROPOSTA_ERRO_PADRAO = os.Getenv("FINALIZAR_PROPOSTA_ERRO_PADRAO")
 	WEBHOOK_LIBERACAO_URL = os.Getenv("WEBHOOK_LIBERACAO_URL")
 	COBRANCA_QUEUE = os.Getenv("COBRANCA_QUEUE")
 
@@ -384,7 +324,7 @@ func InitializeEnvVar() error {
 }
 
 // SetEnvVars modifica as variáveis de ambiente.
-func SetEnvVars(env GlobalEnvVars) map[string]any {
+func SetEnvVars(env EnvVars) map[string]any {
 	globalMu.Lock()
 	defer globalMu.Unlock()
 	var changed = make(map[string]any)

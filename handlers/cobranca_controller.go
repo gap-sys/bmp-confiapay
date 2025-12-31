@@ -28,7 +28,7 @@ func NewCobrancaCreditoPessoalController(cache *cache.RedisCache, service Cobran
 }
 
 func (a *CobrancaCreditoPessoalController) GetPrefix() string {
-	return "/cobranca"
+	return "/"
 }
 
 // Serão expostos apenas os endpoints necessários para atualizar dados bancários e realizar o envio de assinatura via certificadora.
@@ -46,10 +46,10 @@ func (a *CobrancaCreditoPessoalController) Route(r fiber.Router) {
 //	@Tags			CreditoPessoal
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body	models.BuscarPropostaDb	true  "Id da proposta que se deseja realizar a cobrança."
+//	@Param			body	body	models.GerarCobrancaFrontendInput	true  "Dados da cobrança."
 //	@Success		200		{object}	models.APIResponse
 //	@Failure		422		{object}	models.APIError
-//	@Router			/cobranca/geracao [post]
+//	@Router			/geracao [post]
 func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var input models.GerarCobrancaFrontendInput
@@ -63,9 +63,14 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
 		}
 
-		var payload = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_GERAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento)
+		authPayload := models.AuthPayload{
+			IdConvenio:       input.IdConvenio,
+			IdSecuritizadora: input.IdSecuritizadora,
+			Id:               strconv.Itoa(input.IdPropostaParcela),
+		}
+
+		var payload = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_GERAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento, authPayload)
 		payload.WebhookUrl = input.UrlWebhook
-		payload.Token = input.Token
 
 		payload.GerarCobrancaInput = input
 
@@ -92,10 +97,10 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 //	@Tags			CreditoPessoal
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body	models.BuscarPropostaDb	true  "Identificador da proposta para ser buscado os dados bancários."
+//	@Param			body	body	models.CancelarCobrancaFrontendInput	true  "Dados da cobrança."
 //	@Success		200		{object}	models.APIResponse
 //	@Failure		422		{object}	models.APIError
-//	@Router			/cobranca/cancelamento [post]
+//	@Router			/cancelamento [post]
 func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 
 	return func(c *fiber.Ctx) error {
@@ -113,14 +118,20 @@ func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 			DTO: models.DtoCobranca{
 				CodigoProposta: input.NumeroAcompanhamento,
 				CodigoOperacao: strconv.Itoa(input.IdProposta),
-				NroParcelas:    input.Parcelas,
+				NroParcelas:    []int{1},
 			},
 			DTOCancelarCobrancas: models.DTOCancelarCobrancas{
 				CodigosLiquidacoes: []string{input.CodigoLiquidacao},
 			},
 		}
 
-		var cancelamentoTaskData = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_CANCELAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento)
+		var authPayload = models.AuthPayload{
+			IdConvenio:       input.IdConvenio,
+			IdSecuritizadora: input.IdSecuritizadora,
+			Id:               strconv.Itoa(input.IdPropostaParcela),
+		}
+
+		var cancelamentoTaskData = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_CANCELAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento, authPayload)
 		cancelamentoTaskData.CancelamentoCobranca = bmpPayload
 
 		data, _, statusCode, err := a.cobrancaService.CancelarCobranca(cancelamentoTaskData)
@@ -144,7 +155,7 @@ func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 //	@Param			body	body	models.ConsultaCobrancaFrontEndInput	true  "Identificador da proposta."
 //	@Success		200		{object}	models.ConsultaCobrancaResponse
 //	@Failure		422		{object}	models.APIError
-//	@Router			/cobrancas [post]
+//	@Router			/consulta [post]
 func (a *CobrancaCreditoPessoalController) ConsultarCobrancas() fiber.Handler {
 
 	return func(c *fiber.Ctx) error {
@@ -159,12 +170,23 @@ func (a *CobrancaCreditoPessoalController) ConsultarCobrancas() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
 		}
 
-		consultaTaskData := models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_CONSULTAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento)
+		var parcelas = make([]int, 0)
+		if input.Parcela > 0 {
+			parcelas = append(parcelas, input.Parcela)
+		}
+
+		var authPayload = models.AuthPayload{
+			IdConvenio:       input.IdConvenio,
+			IdSecuritizadora: input.IdSecuritizadora,
+			Id:               strconv.Itoa(input.IdProposta),
+		}
+
+		consultaTaskData := models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_CONSULTAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento, authPayload)
 		consultaTaskData.ConsultarCobrancaInput =
 			models.ConsultarDetalhesInput{
 				DTO: models.DtoCobranca{CodigoProposta: input.NumeroAcompanhamento,
 					CodigoOperacao: strconv.Itoa(input.IdProposta),
-					NroParcelas:    input.Parcelas,
+					NroParcelas:    parcelas,
 				},
 				DTOConsultaDetalhes: models.DTOConsultaDetalhes{
 					TrazerBoleto:          true,
@@ -172,13 +194,13 @@ func (a *CobrancaCreditoPessoalController) ConsultarCobrancas() fiber.Handler {
 				},
 			}
 
-		data, _, statusCode, err := a.cobrancaService.ConsultarCobranca(consultaTaskData)
+		data, _, statusCode, err := a.cobrancaService.Cobranca(consultaTaskData)
 
 		if err != nil {
 			return c.Status(statusCode).JSON(err)
 		}
 
-		return c.Status(fiber.StatusOK).JSON(data.Result)
+		return c.Status(fiber.StatusOK).JSON(data)
 	}
 
 }
