@@ -85,6 +85,8 @@ func main() {
 	if err != nil {
 		log.Fatal("Erro ao carregar fuso horário para America/Sao_Paulo", err)
 	}
+	helpers.WEBHOOK_HASH = config.WEBHOOK_HASH
+	helpers.WEBHOOK_KEY = config.WEBHOOK_KEY
 
 	//Instanciando loggers
 	rmqLogger := slog.New(helpers.NewECSJSONHandler(slog.LevelInfo, loc))

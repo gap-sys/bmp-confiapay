@@ -135,7 +135,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
 					whData["data_pagamento"] = lancamento.DtEvento
 					whData["valor_pago"] = lancamento.LancamentoParcela.VlrPagamento
-					whData["encargos"] = lancamento.LancamentoParcela.VlrEncargos
+					whData["valor_encargo"] = lancamento.LancamentoParcela.VlrEncargos
 					whData["valor_desconto"] = lancamento.LancamentoParcela.VlrDesconto
 					whData["operacao"] = "P"
 

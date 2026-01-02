@@ -2,9 +2,15 @@ package helpers
 
 import (
 	"bytes"
+	"cobranca-bmp/auth"
 	"encoding/json"
 	"fmt"
 	"net/http"
+)
+
+var (
+	WEBHOOK_HASH string
+	WEBHOOK_KEY  string
 )
 
 // Envia "ping" para um endpoint e espera "pong" como resposta. Será utilizado para testar conexões.
@@ -19,7 +25,10 @@ func PingValidation(url string) error {
 		return err
 	}
 
-	req.Header.Add("Content-Type", "application/json")
+	key, err := auth.EncryptHash(WEBHOOK_HASH, WEBHOOK_KEY)
+
+	req.Header.Set("X-API-Key", key)
+	req.Header.Set("Content-Type", "application/json")
 
 	var client = &http.Client{}
 	resp, err := client.Do(req)
