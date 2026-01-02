@@ -11,7 +11,7 @@ type GerarCobrancaFrontendInput struct {
 	UrlWebhook           string  `json:"url_webhook" validate:"required,url,ping"`
 	DataVencimento       string  `json:"data_vencimento" validate:"required,datetime=2006-01-02"`
 	DataExpiracao        string  `json:"data_expiracao" validate:"required,datetime=2006-01-02"`
-	NumeroParcela        int     `json:"numero_parcela" validate:"required"`
+	NumeroParcela        int     `json:"parcela" validate:"required"`
 	IdPropostaParcela    int     `json:"id_proposta_parcela" validate:"required"`
 	ValorParcela         float64 `json:"valor_parcela"`
 	TipoCobranca         int     `json:"id_forma_cobranca" validate:"required,oneof=2 3 7"`
