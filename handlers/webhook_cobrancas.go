@@ -126,6 +126,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 						}
 
 						w.webhookService.SendToDLQ(dlqData)
+						return
 
 					}
 
@@ -176,6 +177,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 						}
 
 						w.webhookService.SendToDLQ(dlqData)
+						return
 
 					}
 
@@ -214,6 +216,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 						}
 
 						w.webhookService.SendToDLQ(dlqData)
+						return
 
 					}
 
@@ -256,6 +259,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 						}
 
 						w.webhookService.SendToDLQ(dlqData)
+						return
 
 					}
 

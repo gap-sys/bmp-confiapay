@@ -163,7 +163,7 @@ func main() {
 	cobrancaService := service.NewCobrancaService(ctx, elegibilidadeServiceLogger, loc, cobrancaClient, webhookService, redis, parcelaRepo, updateService)
 	rmq, err := queue.NewRMQ(
 		ctx, loc, redis, rmqLogger,
-		webhookService, cobrancaService,
+		webhookService, cobrancaService, updateService,
 		config.RABBITMQ_QOS)
 
 	if err != nil {
@@ -178,8 +178,9 @@ func main() {
 	//Instanciando os controllers
 	healthChecker := monitoring.NewServicesHealthChecker(rmq, redis)
 	cobrancaController := handlers.NewCobrancaCreditoPessoalController(redis, cobrancaService, webhookService, loc)
-	configController := handlers.NewConfigController(rmq, nil, nil)
-	monitoringControllers := handlers.NewMonitoringController(loc, nil, nil, healthChecker, redis, rmq)
+	configController := handlers.NewConfigController(rmq, dbManager, poolMonitor)
+	webhookController := handlers.NewWebhookController(clientLogger, redis, loc, webhookService, cobrancaService)
+	monitoringControllers := handlers.NewMonitoringController(loc, dbManager, poolMonitor, healthChecker, redis, rmq)
 
 	//Configurando o app do Fiber e suas rotas
 	app := fiber.New(fiber.Config{EnablePrintRoutes: true,
@@ -187,7 +188,7 @@ func main() {
 	})
 	config.ConfigRoutes(app, fiberLogger,
 		configController,
-		cobrancaController, monitoringControllers)
+		cobrancaController, monitoringControllers, webhookController)
 
 	app.Get("/metrics", adaptor.HTTPHandler(prometheusHandler))
 	//Executando o app em uma goroutine separada

@@ -83,7 +83,6 @@ func (u *UpdateService) UpdateCodLiquidacao(data models.UpdateDbData, calledAssy
 }
 
 func (u *UpdateService) UpdateGeracaoParcela(data models.UpdateDbData, calledAssync bool) (bool, error) {
-
 	noConn, err := u.parcelaRepository.UpdateGeracaoCobranca(*data.GeracaoParcela, data.CodigoLiquidacao)
 	if err != nil {
 		if !noConn {

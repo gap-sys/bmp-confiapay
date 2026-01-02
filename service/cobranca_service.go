@@ -44,13 +44,14 @@ func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Loca
 	client CobrancaClient, webhookService *WebhookService,
 	cache *cache.RedisCache, parcelaRepository ParcelaRepository, updateService *UpdateService) *CobrancalService {
 	return &CobrancalService{
-		ctx:            ctx,
-		logger:         logger,
-		loc:            loc,
-		client:         client,
-		webhookService: webhookService,
-		cache:          cache,
-		updateService:  updateService,
+		ctx:               ctx,
+		logger:            logger,
+		loc:               loc,
+		client:            client,
+		webhookService:    webhookService,
+		cache:             cache,
+		updateService:     updateService,
+		parcelaRepository: parcelaRepository,
 	}
 }
 
@@ -206,6 +207,7 @@ func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 	payloadBMP.DtoGerarMultiplasLiquidacoes = models.DtoGerarMultiplasLiquidacoes{
 		DescricaoLiquidacao: fmt.Sprintf("Parcela %d da proposta %d", payload.GerarCobrancaInput.NumeroParcela, payload.GerarCobrancaInput.IdProposta),
 		NotificarCliente:    false,
+		TipoRegistro:        1,
 		PagamentoViaBoleto:  payload.TipoCobranca == config.TIPO_COBRANCA_BOLETOPIX,
 		PagamentoViaPIX:     payload.TipoCobranca == config.TIPO_COBRANCA_PIX,
 		Parcelas: []models.ParcelaCobranca{
@@ -216,7 +218,6 @@ func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 				PermiteDescapitalizacao: false,
 			},
 		},
-		TipoRegistro: 1,
 	}
 
 	data, statusCode, status, err := a.client.GerarCobrancaParcelasMultiplas(payloadBMP, payload.Token, payload.IdempotencyKey)
@@ -266,7 +267,7 @@ func (a *CobrancalService) CancelarCobranca(payload models.CobrancaTaskData) (an
 		return nil, status, statusCode, errApi
 	}
 
-	a.updateService.UpdateGeracaoParcela(models.UpdateDbData{
+	a.updateService.UpdateCancelamentoParcela(models.UpdateDbData{
 		CancelamentoCobranca: &payload.CancelamentoData,
 		CodigoLiquidacao:     payload.CancelamentoCobranca.DTOCancelarCobrancas.CodigosLiquidacoes[0],
 		Action:               "update_cancelamento",

@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"cobranca-bmp/config"
 	"cobranca-bmp/helpers"
 	"cobranca-bmp/models"
 	"encoding/json"
@@ -9,7 +10,7 @@ import (
 
 // ConsumeQueues consome as mensagens das filas.
 func (r *RabbitMQ) ConsumeQueues() {
-	//	go r.ConsumeDB()
+	go r.ConsumeDB()
 	go r.ConsumeWebhook()
 	go r.MonitoreServer()
 	go r.ConsumeCobrancaQueues()
@@ -17,13 +18,13 @@ func (r *RabbitMQ) ConsumeQueues() {
 
 // setUpConsumers configura os consumers para as filas digitacaoDlq, simulacaoDlq, dados bancarios e webhook.
 func (r *RabbitMQ) setUpConsumers() error {
-	/*msgs, err := r.dbCh.Consume(r.dbqueue, "bmp-fgts-update", false, false, false, false, nil)
+	msgs, err := r.dbCh.Consume(r.dbqueue, "bmp-db", false, false, false, false, nil)
 	if err != nil {
 		return err
 	}
-	r.dbMsgs = msgs*/
+	r.dbMsgs = msgs
 
-	msgs, err := r.webhookCh.Consume(r.webhookQueue, "bmp-fgts-webhook", false, false, false, false, nil)
+	msgs, err = r.webhookCh.Consume(r.webhookQueue, "bmp-webhook", false, false, false, false, nil)
 	if err != nil {
 		return err
 	}
@@ -94,7 +95,6 @@ func (r *RabbitMQ) ConsumeWebhook() {
 
 // ConsumeDB ficará em execução para ouvir as mensagens da fila de db.
 
-/*
 func (r *RabbitMQ) ConsumeDB() {
 	for msg := range r.dbMsgs {
 		var payload models.UpdateDbData
@@ -167,4 +167,3 @@ func (r *RabbitMQ) ConsumeDB() {
 	}
 
 }
-*/

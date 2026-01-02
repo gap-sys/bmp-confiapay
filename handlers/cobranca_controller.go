@@ -71,7 +71,7 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 
 		var payload = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_GERAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento, authPayload)
 		payload.WebhookUrl = input.UrlWebhook
-
+		payload.TipoCobranca = input.TipoCobranca
 		payload.GerarCobrancaInput = input
 
 		if err := payload.Validate(); err != nil {

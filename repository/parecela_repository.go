@@ -40,7 +40,7 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
 	/*
 			_, err := s.db.ExecContext(ctx, `
 			UPDATE
-			      bmp_cobranca
+			      bmp_cobrancas
 			SET
 			    id_proposta=$1,
 		        id_securitizadora=$2,
@@ -51,7 +51,7 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
 		        id_proposta_parcela=$7,
 		        data_vencimento=$8,
 		        data_expiracao=$9,
-		        numero_parcela=$10,
+		        parcela=$10,
 		        id_forma_cobranca=$11,
 				updated_at=$12
 
@@ -73,9 +73,10 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
 			) */
 
 	_, err := s.db.ExecContext(ctx, `
-	INSERT INTO bmp_cobranca (
+	INSERT INTO bmp_cobrancas (
     id_proposta,
     id_securitizadora,
+	id_convenio,
     numero_acompanhamento,
     codigo_liquidacao,
     numero_ccb,
@@ -83,7 +84,7 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
     id_proposta_parcela,
     data_vencimento,
     data_expiracao,
-    numero_parcela,
+    parcela,
     id_forma_cobranca,
     updated_at
 ) VALUES (
@@ -98,8 +99,9 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
     $9,  
     $10, 
     $11, 
-    $12, 
+    $12,
 	$13
+
 )
 ON CONFLICT (id_proposta_parcela)
 DO UPDATE SET
@@ -110,9 +112,10 @@ DO UPDATE SET
     codigo_liquidacao     = EXCLUDED.codigo_liquidacao,
     numero_ccb            = EXCLUDED.numero_ccb,
     url_webhook           = EXCLUDED.url_webhook,
+	id_proposta_parcela   = EXCLUDED.id_proposta_parcela,
     data_vencimento       = EXCLUDED.data_vencimento,
     data_expiracao        = EXCLUDED.data_expiracao,
-    numero_parcela        = EXCLUDED.numero_parcela,
+    parcela        = EXCLUDED.parcela,
     id_forma_cobranca     = EXCLUDED.id_forma_cobranca,
     updated_at            = EXCLUDED.updated_at;
 	`,
@@ -149,7 +152,7 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
 	/*
 			_, err := s.db.ExecContext(ctx, `
 			UPDATE
-			      bmp_cobranca
+			      bmp_cobrancas
 			SET
 			    id_proposta=$1,
 		        id_securitizadora=$2,
@@ -160,7 +163,7 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
 		        id_proposta_parcela=$7,
 		        data_vencimento=$8,
 		        data_expiracao=$9,
-		        numero_parcela=$10,
+		        parcela=$10,
 		        id_forma_cobranca=$11,
 				updated_at=$12
 
@@ -182,7 +185,7 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
 			) */
 
 	_, err := s.db.ExecContext(ctx, `
-	INSERT INTO bmp_cobranca (
+	INSERT INTO bmp_cobrancas (
     id_proposta,
     id_securitizadora,
 	id_convenio,
@@ -191,10 +194,6 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
     numero_ccb,
     url_webhook,
     id_proposta_parcela,
-    data_vencimento,
-    data_expiracao,
-    numero_parcela,
-    id_forma_cobranca,
     updated_at
 ) VALUES (
     $1,  
@@ -206,6 +205,8 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
     $7, 
     $8,
 	$9
+	
+	
 )
 ON CONFLICT (id_proposta_parcela)
 DO UPDATE SET
@@ -216,11 +217,11 @@ DO UPDATE SET
     codigo_liquidacao     = EXCLUDED.codigo_liquidacao,
     numero_ccb            = EXCLUDED.numero_ccb,
     url_webhook           = EXCLUDED.url_webhook,
-    updated_at            = EXCLUDED.updated_at;
+	id_proposta_parcela   = EXCLUDED.id_proposta_parcela,
+    updated_at            = EXCLUDED.updated_at
 	`,
 		data.IdProposta,
 		data.IdSecuritizadora,
-		data.IdConvenio,
 		data.IdConvenio,
 		data.NumeroAcompanhamento,
 		codigoLiquidacao,
@@ -232,7 +233,7 @@ DO UPDATE SET
 
 	if err != nil {
 		//	var logData = map[string]any{s}
-		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela simulacao_status", err.Error(), data)
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela bmp_cobrancas", err.Error(), data)
 		return isConnError(s.db, err), err
 	}
 
@@ -247,7 +248,7 @@ func (s *ParcelaRepo) UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidaca
 	defer cancel()
 	_, err := s.db.ExecContext(ctx, `
 	UPDATE
-	      bmp_cobranca 
+	      bmp_cobrancas 
 	SET  
         codigo_liquidacao"=$1, 
 		updated_at=$2     
@@ -288,7 +289,7 @@ func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string) (models.Cobra
 		        id_forma_cobranca
 			
 			FROM 
-			    bmp_cobrancas
+			    bmp_cobrancass
 
 				 where codigo_liquidacao=$1`,
 		codigoLiquidacao,
@@ -331,7 +332,7 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int) (models.CobrancaBMP, erro
 		        id_forma_cobranca
 			
 			FROM 
-			    bmp_cobrancas
+			    bmp_cobrancass
 
 				 where parcela=$1`,
 		numParcela,
@@ -345,7 +346,7 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int) (models.CobrancaBMP, erro
 		&cobranca.CodigoLiquidacao,
 		&cobranca.IdFormaCobranca)
 	if err != nil {
-		var logData = map[string]any{"numero_parcela": numParcela}
+		var logData = map[string]any{"parcela": numParcela}
 		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por número de parcela", err.Error(), logData)
 		return models.CobrancaBMP{}, err
 	}

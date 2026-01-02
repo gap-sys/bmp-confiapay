@@ -31,14 +31,15 @@ type CobrancaTaskData struct {
 
 func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, numeroAcompanhamento string, authPayload AuthPayload) CobrancaTaskData {
 	var c = CobrancaTaskData{
-		IdProposta:         IdProposta,
-		RateLimitRetries:   config.RATE_LIMIT_MAX_RETRIES,
-		TimeoutRetries:     config.TIMEOUT_MAX_RETRIES,
-		CurrentDelay:       0,
-		MultiplasCobrancas: true,
-		CalledAssync:       false,
-		AuthPayload:        authPayload,
-		Status:             status,
+		IdProposta:           IdProposta,
+		NumeroAcompanhamento: numeroAcompanhamento,
+		RateLimitRetries:     config.RATE_LIMIT_MAX_RETRIES,
+		TimeoutRetries:       config.TIMEOUT_MAX_RETRIES,
+		CurrentDelay:         0,
+		MultiplasCobrancas:   true,
+		CalledAssync:         false,
+		AuthPayload:          authPayload,
+		Status:               status,
 	}
 	c.GenIdempotencyKey(idempotencyKey)
 
