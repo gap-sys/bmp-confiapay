@@ -10,6 +10,7 @@ type CobrancaTaskData struct {
 	IdProposta             int                           `json:"idProposta"`
 	WebhookUrl             string                        `json:"urlWebhook"`
 	IdempotencyKey         string                        `json:"idempotencyKey,omitempty"`
+	IdPropostaParcela      int                           `json:"idPropostaParcela"`
 	TimeoutRetries         int64                         `json:"timeoutRetries"`
 	MultiplasCobrancas     bool                          `json:"multiplasCobrancas"`
 	TipoCobranca           int                           `json:"tipoCobranca"`

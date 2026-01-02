@@ -154,8 +154,16 @@ func (a *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 
 	if payload.CalledAssync {
 		switch payload.Status {
+
 		case config.STATUS_GERAR_COBRANCA, config.STATUS_CANCELAR_COBRANCA:
-			a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, errAPI, "cobranca service"))
+			var op = map[string]string{config.STATUS_GERAR_COBRANCA: "R", config.STATUS_CANCELAR_COBRANCA: "C"}
+			var whData = make(map[string]any)
+			whData["has_error"] = true
+			whData["msg"] = errAPI.Msg
+			whData["id_proposta_parcela"] = payload.IdPropostaParcela
+			whData["operacao"] = op[payload.Status]
+
+			a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "cobranca service"))
 
 		case config.STATUS_CONSULTAR_COBRANCA:
 			var dlqData = models.DLQData{

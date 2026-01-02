@@ -73,6 +73,7 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 		payload.WebhookUrl = input.UrlWebhook
 		payload.TipoCobranca = input.TipoCobranca
 		payload.GerarCobrancaInput = input
+		payload.IdPropostaParcela = input.IdPropostaParcela
 
 		if err := payload.Validate(); err != nil {
 			return c.Status(422).JSON(err)
@@ -134,6 +135,7 @@ func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 		var cancelamentoTaskData = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_CANCELAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento, authPayload)
 		cancelamentoTaskData.CancelamentoCobranca = bmpPayload
 		cancelamentoTaskData.CancelamentoData = input
+		cancelamentoTaskData.IdPropostaParcela = input.IdPropostaParcela
 
 		data, _, statusCode, err := a.cobrancaService.CancelarCobranca(cancelamentoTaskData)
 

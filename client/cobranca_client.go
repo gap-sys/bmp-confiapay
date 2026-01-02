@@ -96,8 +96,10 @@ func (c *CobrancaClient) GerarCobrancaParcelasMultiplas(payload models.Multiplas
 		switch resp.StatusCode {
 		case http.StatusGatewayTimeout, http.StatusRequestTimeout:
 			status = config.API_STATUS_TIMEOUT
+			APIErr.Msg = "Geração de cobranças indisponível"
 		case http.StatusTooManyRequests:
 			status = config.API_STATUS_RATE_LIMIT
+			APIErr.Msg = "Geração de cobranças indisponível"
 		case http.StatusUnauthorized:
 			status = config.API_STATUS_UNAUTHORIZED
 			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.Dto.CodigoOperacao)
