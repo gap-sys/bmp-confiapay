@@ -37,38 +37,197 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
 	defer cancel()
+	/*
+			_, err := s.db.ExecContext(ctx, `
+			UPDATE
+			      bmp_cobranca
+			SET
+			    id_proposta=$1,
+		        id_securitizadora=$2,
+		        numero_acompanhamento=$3,
+		        codigo_liquidacao"=$4,
+		        numero_ccb=$5,
+		        url_webhook=$6,
+		        id_proposta_parcela=$7,
+		        data_vencimento=$8,
+		        data_expiracao=$9,
+		        numero_parcela=$10,
+		        id_forma_cobranca=$11,
+				updated_at=$12
+
+
+
+				 where id_proposta_parcela=$13`,
+				data.IdProposta,
+				data.IdSecuritizadora,
+				data.NumeroAcompanhamento,
+				codigoLiquidacao,
+				data.NumeroCCB,
+				data.UrlWebhook, data.IdPropostaParcela,
+				data.DataVencimento,
+				data.DataExpiracao,
+				data.NumeroParcela,
+				data.TipoCobranca,
+				now,
+				data.IdPropostaParcela,
+			) */
+
 	_, err := s.db.ExecContext(ctx, `
-	UPDATE
-	      bmp_cobranca 
-	SET  
-	    id_proposta=$1,
-        id_securitizadora=$2,
-        numero_acompanhamento=$3,
-        codigo_liquidacao"=$4,
-        numero_ccb=$5,
-        url_webhook=$6,
-        id_proposta_parcela=$7,
-        data_vencimento=$8,
-        data_expiracao=$9,
-        numero_parcela=$10,
-        id_forma_cobranca=$11,
-		updated_at=$12
-
-
-
-		 where id_proposta_parcela=$13`,
+	INSERT INTO bmp_cobranca (
+    id_proposta,
+    id_securitizadora,
+    numero_acompanhamento,
+    codigo_liquidacao,
+    numero_ccb,
+    url_webhook,
+    id_proposta_parcela,
+    data_vencimento,
+    data_expiracao,
+    numero_parcela,
+    id_forma_cobranca,
+    updated_at
+) VALUES (
+    $1,  
+    $2,  
+    $3,  
+    $4,  
+    $5,  
+    $6, 
+    $7, 
+    $8,  
+    $9,  
+    $10, 
+    $11, 
+    $12, 
+	$13
+)
+ON CONFLICT (id_proposta_parcela)
+DO UPDATE SET
+    id_proposta           = EXCLUDED.id_proposta,
+    id_securitizadora     = EXCLUDED.id_securitizadora,
+	id_convenio            = EXCLUDED.id_convenio,
+    numero_acompanhamento = EXCLUDED.numero_acompanhamento,
+    codigo_liquidacao     = EXCLUDED.codigo_liquidacao,
+    numero_ccb            = EXCLUDED.numero_ccb,
+    url_webhook           = EXCLUDED.url_webhook,
+    data_vencimento       = EXCLUDED.data_vencimento,
+    data_expiracao        = EXCLUDED.data_expiracao,
+    numero_parcela        = EXCLUDED.numero_parcela,
+    id_forma_cobranca     = EXCLUDED.id_forma_cobranca,
+    updated_at            = EXCLUDED.updated_at;
+	`,
 		data.IdProposta,
 		data.IdSecuritizadora,
+		data.IdConvenio,
 		data.NumeroAcompanhamento,
 		codigoLiquidacao,
 		data.NumeroCCB,
-		data.UrlWebhook, data.IdPropostaParcela,
+		data.UrlWebhook,
+		data.IdPropostaParcela,
 		data.DataVencimento,
 		data.DataExpiracao,
 		data.NumeroParcela,
 		data.TipoCobranca,
 		now,
+	)
+
+	if err != nil {
+		//	var logData = map[string]any{s}
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela simulacao_status", err.Error(), data)
+		return isConnError(s.db, err), err
+	}
+
+	return false, nil
+}
+
+func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFrontendInput, codigoLiquidacao string) (bool, error) {
+
+	now := time.Now().In(s.location)
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
+	defer cancel()
+	/*
+			_, err := s.db.ExecContext(ctx, `
+			UPDATE
+			      bmp_cobranca
+			SET
+			    id_proposta=$1,
+		        id_securitizadora=$2,
+		        numero_acompanhamento=$3,
+		        codigo_liquidacao"=$4,
+		        numero_ccb=$5,
+		        url_webhook=$6,
+		        id_proposta_parcela=$7,
+		        data_vencimento=$8,
+		        data_expiracao=$9,
+		        numero_parcela=$10,
+		        id_forma_cobranca=$11,
+				updated_at=$12
+
+
+
+				 where id_proposta_parcela=$13`,
+				data.IdProposta,
+				data.IdSecuritizadora,
+				data.NumeroAcompanhamento,
+				codigoLiquidacao,
+				data.NumeroCCB,
+				data.UrlWebhook, data.IdPropostaParcela,
+				data.DataVencimento,
+				data.DataExpiracao,
+				data.NumeroParcela,
+				data.TipoCobranca,
+				now,
+				data.IdPropostaParcela,
+			) */
+
+	_, err := s.db.ExecContext(ctx, `
+	INSERT INTO bmp_cobranca (
+    id_proposta,
+    id_securitizadora,
+	id_convenio,
+    numero_acompanhamento,
+    codigo_liquidacao,
+    numero_ccb,
+    url_webhook,
+    id_proposta_parcela,
+    data_vencimento,
+    data_expiracao,
+    numero_parcela,
+    id_forma_cobranca,
+    updated_at
+) VALUES (
+    $1,  
+    $2,  
+    $3,  
+    $4,  
+    $5,  
+    $6,  
+    $7, 
+    $8,
+	$9
+)
+ON CONFLICT (id_proposta_parcela)
+DO UPDATE SET
+    id_proposta           = EXCLUDED.id_proposta,
+    id_securitizadora     = EXCLUDED.id_securitizadora,
+	id_convenio            = EXCLUDED.id_convenio,
+    numero_acompanhamento = EXCLUDED.numero_acompanhamento,
+    codigo_liquidacao     = EXCLUDED.codigo_liquidacao,
+    numero_ccb            = EXCLUDED.numero_ccb,
+    url_webhook           = EXCLUDED.url_webhook,
+    updated_at            = EXCLUDED.updated_at;
+	`,
+		data.IdProposta,
+		data.IdSecuritizadora,
+		data.IdConvenio,
+		data.IdConvenio,
+		data.NumeroAcompanhamento,
+		codigoLiquidacao,
+		data.NumeroCCB,
+		data.UrlWebhook,
 		data.IdPropostaParcela,
+		now,
 	)
 
 	if err != nil {
@@ -107,4 +266,90 @@ func (s *ParcelaRepo) UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidaca
 	}
 
 	return false, nil
+}
+
+func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string) (models.CobrancaBMP, error) {
+	var cobranca models.CobrancaBMP
+	cobranca.CodigoLiquidacao = codigoLiquidacao
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
+	defer cancel()
+
+	err := s.db.QueryRowContext(ctx, `
+			SELECT
+			    id_proposta,
+				numero_acompanhamento,
+		        id_securitizadora,
+				id_convenio, 
+		        numero_ccb,
+		        url_webhook,
+		        id_proposta_parcela,
+		        parcela,
+		        id_forma_cobranca
+			
+			FROM 
+			    bmp_cobrancas
+
+				 where codigo_liquidacao=$1`,
+		codigoLiquidacao,
+	).Scan(&cobranca.IdProposta,
+		&cobranca.NumeroAcompanhamento,
+		&cobranca.IdSecuritizadora,
+		&cobranca.IdConvenio,
+		&cobranca.NumeroCCB,
+		&cobranca.UrlWebhook,
+		&cobranca.IdPropostaParcela,
+		&cobranca.NumeroParcela,
+		&cobranca.IdFormaCobranca)
+	if err != nil {
+		var logData = map[string]any{"codigo_liquidacao": codigoLiquidacao}
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por código de liquidação", err.Error(), logData)
+		return models.CobrancaBMP{}, err
+	}
+
+	return cobranca, nil
+
+}
+
+func (s *ParcelaRepo) FindByNumParcela(numParcela int) (models.CobrancaBMP, error) {
+	var cobranca models.CobrancaBMP
+	cobranca.NumeroParcela = numParcela
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
+	defer cancel()
+
+	err := s.db.QueryRowContext(ctx, `
+			SELECT
+			    id_proposta,
+				numero_acompanhamento,
+		        id_securitizadora,
+				id_convenio, 
+		        numero_ccb,
+		        url_webhook,
+		        id_proposta_parcela,
+		      codigo_liquidacao,
+		        id_forma_cobranca
+			
+			FROM 
+			    bmp_cobrancas
+
+				 where parcela=$1`,
+		numParcela,
+	).Scan(&cobranca.IdProposta,
+		&cobranca.NumeroAcompanhamento,
+		&cobranca.IdSecuritizadora,
+		&cobranca.IdConvenio,
+		&cobranca.NumeroCCB,
+		&cobranca.UrlWebhook,
+		&cobranca.IdPropostaParcela,
+		&cobranca.CodigoLiquidacao,
+		&cobranca.IdFormaCobranca)
+	if err != nil {
+		var logData = map[string]any{"numero_parcela": numParcela}
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por número de parcela", err.Error(), logData)
+		return models.CobrancaBMP{}, err
+	}
+
+	return cobranca, nil
+
 }

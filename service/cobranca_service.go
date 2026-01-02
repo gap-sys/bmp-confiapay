@@ -77,7 +77,7 @@ func (a *CobrancalService) Cobranca(payload models.CobrancaTaskData) (any, strin
 		return a.GerarCobranca(&payload)
 
 	}
-	return nil, "", 500, errors.New("Status inválido")
+	return nil, "", 500, models.NewAPIError("", "Status inválido", payload.AuthPayload.Id)
 
 }
 
@@ -156,7 +156,7 @@ func (a *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 
 }
 func (a CobrancalService) SendToDLQ(data any) error {
-	return a.queue.Produce(config.DIGTACAO_QUEUE_DLQ, data, 0)
+	return a.queue.Produce(config.DLQ_QUEUE, data, 0)
 
 }
 
@@ -266,6 +266,12 @@ func (a *CobrancalService) CancelarCobranca(payload models.CobrancaTaskData) (an
 		return nil, status, statusCode, errApi
 	}
 
+	a.updateService.UpdateGeracaoParcela(models.UpdateDbData{
+		CancelamentoCobranca: &payload.CancelamentoData,
+		CodigoLiquidacao:     payload.CancelamentoCobranca.DTOCancelarCobrancas.CodigosLiquidacoes[0],
+		Action:               "update_cancelamento",
+	}, false)
+
 	return data, status, statusCode, nil
 }
 
@@ -287,5 +293,31 @@ func (a *CobrancalService) ConsultarCobranca(payload models.CobrancaTaskData) (m
 		return data, status, statusCode, err
 	}
 
+	if payload.WebhookUrl != "" {
+		var whData = make(map[string]any)
+		whData["id_proposta_parcela"] = payload.CobrancaDBInfo.IdPropostaParcela
+		whData["codigo_liquidacao"] = payload.CobrancaDBInfo.CodigoLiquidacao
+		whData["operacao"] = "R"
+
+		switch payload.CobrancaDBInfo.IdFormaCobranca {
+		case config.TIPO_COBRANCA_BOLETOPIX:
+			whData["boleto"] = data.Parcelas[0].Boletos
+
+		case config.TIPO_COBRANCA_PIX:
+			whData["pix"] = data.Parcelas[0].Pix
+		}
+
+		a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "consulta-cobranca"))
+
+	}
+
 	return data, status, statusCode, nil
+}
+
+func (c *CobrancalService) FindByCodLiquidacao(codigoLiquidacao string) (models.CobrancaBMP, error) {
+	return c.parcelaRepository.FindByCodLiquidacao(codigoLiquidacao)
+}
+
+func (c *CobrancalService) FindByNumParcela(numParcela int) (models.CobrancaBMP, error) {
+	return c.parcelaRepository.FindByNumParcela(numParcela)
 }

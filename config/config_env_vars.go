@@ -85,8 +85,6 @@ var (
 	RABBITMQ_QOS           int
 	RABBITMQ_SIMULACAO_QOS int
 	RABBITMQ_GLOBAL_QOS    bool
-	SIMULACAO_QUEUE_DLQ    string
-	DIGTACAO_QUEUE_DLQ     string
 	WEBHOOK_QUEUE          string
 	DADOS_BANCARIOS_QUEUE  string
 	DB_QUEUE               string
@@ -94,6 +92,7 @@ var (
 	DLQ_EXCHANGE           string
 
 	COBRANCA_QUEUE string
+	DLQ_QUEUE      string
 
 	INITIAL_DELAY          time.Duration
 	TIMEOUT_DELAY          time.Duration
@@ -144,11 +143,10 @@ func LoadEnvVar(files ...string) error {
 // Recupera as variáveis de ambiente setadas em LoadEnvVar e as atribui a variáveis que serão utilizadas no programa.
 func InitializeEnvVar() error {
 	DADOS_BANCARIOS_QUEUE = os.Getenv("DADOS_BANCARIOS_QUEUE")
-	SIMULACAO_QUEUE_DLQ = os.Getenv("SIMULACAO_QUEUE_DLQ")
-	DIGTACAO_QUEUE_DLQ = os.Getenv("DIGTACAO_QUEUE_DLQ")
 	DB_QUEUE = os.Getenv("DB_QUEUE")
 	BMP_EXCHANGE = os.Getenv("BMP_EXCHANGE")
 	DLQ_EXCHANGE = os.Getenv("DLQ_EXCHANGE")
+	DLQ_QUEUE = os.Getenv("DLQ_QUEUE")
 	BASE_URL = os.Getenv("BASE_URL")
 	AUTH_URL = os.Getenv("AUTH_URL")
 	RABBITMQ_URL = os.Getenv("RABBITMQ_URL")

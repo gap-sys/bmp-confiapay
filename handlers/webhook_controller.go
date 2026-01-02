@@ -34,5 +34,5 @@ func (w *WebhookController) GetPrefix() string {
 }
 
 func (w *WebhookController) Route(r fiber.Router) {
-	r.Post("/insscp/webhook/cobranca", w.WebhookCobranca())
+	r.Post("/webhook", w.WebhookCobranca())
 }

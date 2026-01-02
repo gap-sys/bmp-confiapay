@@ -53,6 +53,6 @@ func (w *WebhookService) RequestToWebhook(data models.WebhookTaskData) error {
 }
 
 func (w *WebhookService) SendToDLQ(data any) {
-	w.queue.Produce(config.DIGTACAO_QUEUE_DLQ, data, 0)
+	w.queue.Produce(config.DLQ_QUEUE, data, 0)
 
 }

@@ -6,6 +6,7 @@ import (
 	"cobranca-bmp/models"
 	"context"
 	"encoding/json"
+	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -113,8 +114,31 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 				case 3: //Parcela paga
 					var lancamento models.EventoLancamentoParcela
 					json.Unmarshal(rawBody, &lancamento)
-					SearchMode = "parcela"
 					bodyProcessed = true
+					cobrancaInfo, err := w.cobrancaService.FindByNumParcela(lancamento.LancamentoParcela.NroParcela)
+					if err != nil {
+						var dlqData = models.DLQData{
+							Payload:  resp,
+							Mensagem: "Erro ao buscar cobranca por número de parcela",
+							Erro:     "Erro ao buscar cobranca por número de parcela",
+							Contexto: "webhook cobranças",
+							Time:     time.Now().In(w.location),
+						}
+
+						w.webhookService.SendToDLQ(dlqData)
+
+					}
+
+					var whData = make(map[string]any)
+					whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
+					whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
+					whData["data_pagamento"] = lancamento.DtEvento
+					whData["valor_pago"] = lancamento.LancamentoParcela.VlrPagamento
+					whData["encargos"] = lancamento.LancamentoParcela.VlrEncargos
+					whData["valor_desconto"] = lancamento.LancamentoParcela.VlrDesconto
+					whData["operacao"] = "P"
+
+					w.webhookService.RequestToWebhook(models.NewWebhookTaskData(cobrancaInfo.UrlWebhook, whData, "cancelamento-cobranca"))
 
 					return
 
@@ -140,8 +164,27 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 				case 6: //Cancelamento de boleto
 					var cancelamento models.EventoCancelamentoBoleto
 					json.Unmarshal(rawBody, &cancelamento)
-					SearchMode = "parcelas"
 					bodyProcessed = true
+					cobrancaInfo, err := w.cobrancaService.FindByNumParcela(cancelamento.CancelamentoBoleto.Parcelas[0])
+					if err != nil {
+						var dlqData = models.DLQData{
+							Payload:  resp,
+							Mensagem: "Erro ao buscar cobranca por número de parcela",
+							Erro:     "Erro ao buscar cobranca por número de parcela",
+							Contexto: "webhook cobranças",
+							Time:     time.Now().In(w.location),
+						}
+
+						w.webhookService.SendToDLQ(dlqData)
+
+					}
+
+					var whData = make(map[string]any)
+					whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
+					whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
+					whData["operacao"] = "C"
+
+					w.webhookService.RequestToWebhook(models.NewWebhookTaskData(cobrancaInfo.UrlWebhook, whData, "cancelamento-cobranca"))
 
 					return
 
@@ -160,12 +203,68 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					json.Unmarshal(rawBody, &registroCobranca)
 					//helpers.LogError(c.Context(), w.logger, w.location, "webhook cobranças", "", "Não foi possível encontrar parcela", nil, input
 					bodyProcessed = true
+					cobrancaInfo, err := w.cobrancaService.FindByCodLiquidacao(registroCobranca.GeracaoCobranca.CodigoLiquidacao)
+					if err != nil {
+						var dlqData = models.DLQData{
+							Payload:  resp,
+							Mensagem: "Erro ao buscar cobranca por código de liquidação",
+							Erro:     "Erro ao buscar cobranca por código de liquidação",
+							Contexto: "webhook cobranças",
+							Time:     time.Now().In(w.location),
+						}
+
+						w.webhookService.SendToDLQ(dlqData)
+
+					}
+
+					var authPAyload = models.AuthPayload{
+						IdConvenio:       cobrancaInfo.IdConvenio,
+						IdSecuritizadora: cobrancaInfo.IdSecuritizadora,
+					}
+
+					cobrancaPayload := models.NewCobrancaTastkData(w.cache.GenID(), config.STATUS_CONSULTAR_COBRANCA, cobrancaInfo.IdProposta, cobrancaInfo.NumeroAcompanhamento, authPAyload)
+					cobrancaPayload.CobrancaDBInfo = cobrancaInfo
+					cobrancaPayload.ConsultarCobrancaInput = models.ConsultarDetalhesInput{
+						DTO: models.DtoCobranca{
+							CodigoProposta: cobrancaInfo.NumeroAcompanhamento,
+							CodigoOperacao: strconv.Itoa(cobrancaInfo.IdProposta),
+							NroParcelas:    []int{cobrancaInfo.NumeroParcela},
+						},
+						DTOConsultaDetalhes: models.DTOConsultaDetalhes{
+							TrazerBoleto: true,
+						},
+					}
+
+					cobrancaPayload.WebhookUrl = cobrancaInfo.UrlWebhook
+					cobrancaPayload.CalledAssync = true
+
+					w.cobrancaService.Cobranca(cobrancaPayload)
 
 				case 9: //Cancelamento de pix
 					var cancelamento models.EventoCancelamentoCobranca
 					json.Unmarshal(rawBody, &cancelamento)
 					SearchMode = "parcelas"
 					bodyProcessed = true
+					cobrancaInfo, err := w.cobrancaService.FindByNumParcela(cancelamento.CancelamentoCobranca.Parcelas[0])
+					if err != nil {
+						var dlqData = models.DLQData{
+							Payload:  resp,
+							Mensagem: "Erro ao buscar cobranca por número de parcela",
+							Erro:     "Erro ao buscar cobranca por número de parcela",
+							Contexto: "webhook cobranças",
+							Time:     time.Now().In(w.location),
+						}
+
+						w.webhookService.SendToDLQ(dlqData)
+
+					}
+
+					var whData = make(map[string]any)
+					whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
+					whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
+					whData["operacao"] = "C"
+
+					w.webhookService.RequestToWebhook(models.NewWebhookTaskData(cobrancaInfo.UrlWebhook, whData, "cancelamento-cobranca"))
 
 					return
 

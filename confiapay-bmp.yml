@@ -1,8 +1,8 @@
 version: '3.7'
 
 services:
-  bmp_microservices:
-    image: sergiomsa/bmp:v1 # Substitua pela imagem no Docker Hub ou crie localmente
+  bmpconfiapay_microservices:
+    image: sergiomsa/bmpconfiapay:v1 # Substitua pela imagem no Docker Hub ou crie localmente
     build:
       context: .
     ports:
@@ -19,12 +19,12 @@ services:
           memory: 1024M
       labels:  
         - traefik.enable=true
-        - traefik.http.routers.bmp_microservices.rule=Host(`bmp.Confiapay.com.br`)
-        - traefik.http.routers.bmp_microservices.entrypoints=websecure
-        - traefik.http.routers.bmp_microservices.tls.certresolver=letsencryptresolver
-        - traefik.http.services.bmp_microservices.loadbalancer.server.port=8080
-        - traefik.http.services.bmp_microservices.loadbalancer.passHostHeader=true
-        - traefik.http.routers.bmp_microservices.service=bmp_microservices
+        - traefik.http.routers.bmpconfiapay_microservices.rule=Host(`bmp.Confiapay.com.br`)
+        - traefik.http.routers.bmpconfiapay_microservices.entrypoints=websecure
+        - traefik.http.routers.bmpconfiapay_microservices.tls.certresolver=letsencryptresolver
+        - traefik.http.services.bmpconfiapay_microservices.loadbalancer.server.port=8080
+        - traefik.http.services.bmpconfiapay_microservices.loadbalancer.passHostHeader=true
+        - traefik.http.routers.bmpconfiapay_microservices.service=bmpconfiapay_microservices
     networks:
       - network_swarm_public
     environment:

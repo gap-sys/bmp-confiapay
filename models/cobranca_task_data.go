@@ -7,24 +7,26 @@ import (
 )
 
 type CobrancaTaskData struct {
-	IdProposta             int                        `json:"idProposta"`
-	WebhookUrl             string                     `json:"urlWebhook"`
-	IdempotencyKey         string                     `json:"idempotencyKey,omitempty"`
-	TimeoutRetries         int64                      `json:"timeoutRetries"`
-	MultiplasCobrancas     bool                       `json:"multiplasCobrancas"`
-	TipoCobranca           int                        `json:"tipoCobranca"`
-	NumeroCCB              int                        `json:"numeroCCB"`
-	RateLimitRetries       int64                      `json:"rateLimitRetries"`
-	TimeoutDelay           time.Duration              `json:"timeoutDelay"`
-	CurrentDelay           time.Duration              `json:"currentDelay"`
-	Token                  string                     `json:"token,omitempty"`
-	Status                 string                     `json:"status"`
-	NumeroAcompanhamento   string                     `json:"numeroAcompanhamento"`
-	AuthPayload            AuthPayload                `json:"authPayload"`
-	GerarCobrancaInput     GerarCobrancaFrontendInput `json:"gerarCobrancaInput"`
-	CancelamentoCobranca   CancelarCobrancaInput      `json:"cancelamentoCobranca"`
-	ConsultarCobrancaInput ConsultarDetalhesInput     `json:"consultarCobrancaInput"`
-	CalledAssync           bool                       `json:"calledAssync"`
+	IdProposta             int                           `json:"idProposta"`
+	WebhookUrl             string                        `json:"urlWebhook"`
+	IdempotencyKey         string                        `json:"idempotencyKey,omitempty"`
+	TimeoutRetries         int64                         `json:"timeoutRetries"`
+	MultiplasCobrancas     bool                          `json:"multiplasCobrancas"`
+	TipoCobranca           int                           `json:"tipoCobranca"`
+	NumeroCCB              int                           `json:"numeroCCB"`
+	RateLimitRetries       int64                         `json:"rateLimitRetries"`
+	TimeoutDelay           time.Duration                 `json:"timeoutDelay"`
+	CurrentDelay           time.Duration                 `json:"currentDelay"`
+	Token                  string                        `json:"token,omitempty"`
+	Status                 string                        `json:"status"`
+	NumeroAcompanhamento   string                        `json:"numeroAcompanhamento"`
+	AuthPayload            AuthPayload                   `json:"authPayload"`
+	GerarCobrancaInput     GerarCobrancaFrontendInput    `json:"gerarCobrancaInput"`
+	CancelamentoData       CancelarCobrancaFrontendInput `json:"cancelamentoData"`
+	CancelamentoCobranca   CancelarCobrancaInput         `json:"cancelamentoCobranca"`
+	ConsultarCobrancaInput ConsultarDetalhesInput        `json:"consultarCobrancaInput"`
+	CalledAssync           bool                          `json:"calledAssync"`
+	CobrancaDBInfo         CobrancaBMP                   `json:"cobrancaDBInfo"`
 }
 
 func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, numeroAcompanhamento string, authPayload AuthPayload) CobrancaTaskData {
@@ -33,7 +35,7 @@ func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, num
 		RateLimitRetries:   config.RATE_LIMIT_MAX_RETRIES,
 		TimeoutRetries:     config.TIMEOUT_MAX_RETRIES,
 		CurrentDelay:       0,
-		MultiplasCobrancas: false,
+		MultiplasCobrancas: true,
 		CalledAssync:       false,
 		AuthPayload:        authPayload,
 		Status:             status,

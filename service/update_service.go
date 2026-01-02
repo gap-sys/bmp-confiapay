@@ -50,6 +50,9 @@ func (u *UpdateService) UpdateAssync(data models.UpdateDbData) (bool, error) {
 
 	case "update_geracao":
 		noConn, err = u.UpdateGeracaoParcela(data, true)
+
+	case "update_cancelamento":
+		noConn, err = u.UpdateGeracaoParcela(data, true)
 	default:
 		return false, errors.New("ação de update inválida")
 	}
@@ -68,7 +71,7 @@ func (u *UpdateService) UpdateCodLiquidacao(data models.UpdateDbData, calledAssy
 				Erro:     err.Error(),
 				Time:     time.Now().In(u.loc),
 			}
-			u.queue.Produce(config.DIGTACAO_QUEUE_DLQ, dlqData, 0)
+			u.queue.Produce(config.DLQ_QUEUE, dlqData, 0)
 		} else {
 			if !calledAssync {
 				u.queue.Produce(config.DB_QUEUE, data, config.DB_QUEUE_DELAY)
@@ -91,7 +94,30 @@ func (u *UpdateService) UpdateGeracaoParcela(data models.UpdateDbData, calledAss
 				Erro:     err.Error(),
 				Time:     time.Now().In(u.loc),
 			}
-			u.queue.Produce(config.DIGTACAO_QUEUE_DLQ, dlqData, 0)
+			u.queue.Produce(config.DLQ_QUEUE, dlqData, 0)
+		} else {
+			if !calledAssync {
+				u.queue.Produce(config.DB_QUEUE, data, config.DB_QUEUE_DELAY)
+			}
+		}
+		return noConn, err
+	}
+	return false, nil
+}
+
+func (u *UpdateService) UpdateCancelamentoParcela(data models.UpdateDbData, calledAssync bool) (bool, error) {
+
+	noConn, err := u.parcelaRepository.UpdateCancelamentoCobranca(*data.CancelamentoCobranca, data.CodigoLiquidacao)
+	if err != nil {
+		if !noConn {
+			var dlqData = models.DLQData{
+				Contexto: "db",
+				Payload:  nil,
+				Mensagem: "falha ao realizar update de código liquidação",
+				Erro:     err.Error(),
+				Time:     time.Now().In(u.loc),
+			}
+			u.queue.Produce(config.DLQ_QUEUE, dlqData, 0)
 		} else {
 			if !calledAssync {
 				u.queue.Produce(config.DB_QUEUE, data, config.DB_QUEUE_DELAY)

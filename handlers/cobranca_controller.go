@@ -133,6 +133,7 @@ func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 
 		var cancelamentoTaskData = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_CANCELAR_COBRANCA, input.IdProposta, input.NumeroAcompanhamento, authPayload)
 		cancelamentoTaskData.CancelamentoCobranca = bmpPayload
+		cancelamentoTaskData.CancelamentoData = input
 
 		data, _, statusCode, err := a.cobrancaService.CancelarCobranca(cancelamentoTaskData)
 
