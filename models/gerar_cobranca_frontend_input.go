@@ -8,7 +8,7 @@ type GerarCobrancaFrontendInput struct {
 	NumeroAcompanhamento string  `json:"numero_acompanhamento" validate:"required"`
 	NumeroCCB            int     `json:"numero_ccb" validate:"required"`
 	IdProposta           int     `json:"id_proposta" validate:"required"`
-	UrlWebhook           string  `json:"url_webhook" validate:"required"`
+	UrlWebhook           string  `json:"url_webhook" validate:"required,url,ping"`
 	DataVencimento       string  `json:"data_vencimento" validate:"required,datetime=2006-01-02"`
 	DataExpiracao        string  `json:"data_expiracao" validate:"required,datetime=2006-01-02"`
 	NumeroParcela        int     `json:"numero_parcela" validate:"required"`
@@ -25,7 +25,7 @@ func (g GerarCobrancaFrontendInput) Validate() error {
 	errAPI.HasError = true
 
 	messages := make([]APIMessage, 0)
-	if err := helpers.StructValidate(g); err != nil {
+	if err := helpers.StructValidate(g, "ping"); err != nil {
 		errValidation, ok := err.(*helpers.ErrValidation)
 		if !ok {
 			messages := append(messages, APIMessage{Description: err.Error()})
