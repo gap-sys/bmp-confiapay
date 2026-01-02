@@ -7,6 +7,7 @@ import (
 	"context"
 	"database/sql"
 	"log/slog"
+	"strconv"
 	"time"
 )
 
@@ -194,6 +195,7 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
     numero_ccb,
     url_webhook,
     id_proposta_parcela,
+	parcela,
     updated_at
 ) VALUES (
     $1,  
@@ -204,7 +206,8 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
     $6,  
     $7, 
     $8,
-	$9
+	$9,
+	$10
 	
 	
 )
@@ -218,6 +221,7 @@ DO UPDATE SET
     numero_ccb            = EXCLUDED.numero_ccb,
     url_webhook           = EXCLUDED.url_webhook,
 	id_proposta_parcela   = EXCLUDED.id_proposta_parcela,
+	parcela        = EXCLUDED.parcela,
     updated_at            = EXCLUDED.updated_at
 	`,
 		data.IdProposta,
@@ -228,6 +232,7 @@ DO UPDATE SET
 		data.NumeroCCB,
 		data.UrlWebhook,
 		data.IdPropostaParcela,
+		data.NumeroParcela,
 		now,
 	)
 
@@ -269,9 +274,10 @@ func (s *ParcelaRepo) UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidaca
 	return false, nil
 }
 
-func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string) (models.CobrancaBMP, error) {
+func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int) (models.CobrancaBMP, error) {
 	var cobranca models.CobrancaBMP
 	cobranca.CodigoLiquidacao = codigoLiquidacao
+	numeroCCBString := strconv.Itoa(numeroCCB)
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
 	defer cancel()
@@ -289,10 +295,11 @@ func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string) (models.Cobra
 		        id_forma_cobranca
 			
 			FROM 
-			    bmp_cobrancass
+			    bmp_cobrancas
 
-				 where codigo_liquidacao=$1`,
-		codigoLiquidacao,
+	        WHERE
+				codigo_liquidacao=$1 AND numero_ccb=$2`,
+		codigoLiquidacao, numeroCCBString,
 	).Scan(&cobranca.IdProposta,
 		&cobranca.NumeroAcompanhamento,
 		&cobranca.IdSecuritizadora,
@@ -303,7 +310,7 @@ func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string) (models.Cobra
 		&cobranca.NumeroParcela,
 		&cobranca.IdFormaCobranca)
 	if err != nil {
-		var logData = map[string]any{"codigo_liquidacao": codigoLiquidacao}
+		var logData = map[string]any{"codigo_liquidacao": codigoLiquidacao, "numero_ccb": numeroCCB}
 		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por código de liquidação", err.Error(), logData)
 		return models.CobrancaBMP{}, err
 	}
@@ -312,9 +319,10 @@ func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string) (models.Cobra
 
 }
 
-func (s *ParcelaRepo) FindByNumParcela(numParcela int) (models.CobrancaBMP, error) {
+func (s *ParcelaRepo) FindByNumParcela(numParcela int, numeroCCB int) (models.CobrancaBMP, error) {
 	var cobranca models.CobrancaBMP
 	cobranca.NumeroParcela = numParcela
+	numeroCCBString := strconv.Itoa(numeroCCB)
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
 	defer cancel()
@@ -332,10 +340,11 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int) (models.CobrancaBMP, erro
 		        id_forma_cobranca
 			
 			FROM 
-			    bmp_cobrancass
+			    bmp_cobrancas
 
-				 where parcela=$1`,
-		numParcela,
+			WHERE
+				parcela=$1 AND numero_ccb=$2`,
+		numParcela, numeroCCBString,
 	).Scan(&cobranca.IdProposta,
 		&cobranca.NumeroAcompanhamento,
 		&cobranca.IdSecuritizadora,
@@ -346,8 +355,54 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int) (models.CobrancaBMP, erro
 		&cobranca.CodigoLiquidacao,
 		&cobranca.IdFormaCobranca)
 	if err != nil {
-		var logData = map[string]any{"parcela": numParcela}
+		var logData = map[string]any{"parcela": numParcela, "numero_ccb": numeroCCB}
 		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por número de parcela", err.Error(), logData)
+		return models.CobrancaBMP{}, err
+	}
+
+	return cobranca, nil
+
+}
+
+func (s *ParcelaRepo) FindByDataVencimento(dataVencimento string, numeroCCB int) (models.CobrancaBMP, error) {
+	var cobranca models.CobrancaBMP
+	numeroCCBString := strconv.Itoa(numeroCCB)
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
+	defer cancel()
+
+	err := s.db.QueryRowContext(ctx, `
+			SELECT
+			    id_proposta,
+				numero_acompanhamento,
+		        id_securitizadora,
+				id_convenio, 
+		        numero_ccb,
+		        url_webhook,
+		        id_proposta_parcela,
+		        codigo_liquidacao,
+			    parcela,
+		        id_forma_cobranca
+			
+			FROM 
+			    bmp_cobrancas
+
+			WHERE
+				data_vencimento=$1 AND numero_ccb=$2`,
+		dataVencimento, numeroCCBString,
+	).Scan(&cobranca.IdProposta,
+		&cobranca.NumeroAcompanhamento,
+		&cobranca.IdSecuritizadora,
+		&cobranca.IdConvenio,
+		&cobranca.NumeroCCB,
+		&cobranca.UrlWebhook,
+		&cobranca.IdPropostaParcela,
+		&cobranca.CodigoLiquidacao,
+		&cobranca.NumeroParcela,
+		&cobranca.IdFormaCobranca)
+	if err != nil {
+		var logData = map[string]any{"data_vencimento": dataVencimento, "numero_ccb": numeroCCB}
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por data de vencimento", err.Error(), logData)
 		return models.CobrancaBMP{}, err
 	}
 

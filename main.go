@@ -207,7 +207,6 @@ func main() {
 		}
 		helpers.LogInfo(ctx, webhookLogger, loc, "fiber", "", "Shutdown de servidor realizado com sucesso", nil)
 	}()
-
 	<-sig
 
 }

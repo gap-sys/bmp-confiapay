@@ -9,12 +9,12 @@ type GerarCobrancaFrontendInput struct {
 	NumeroCCB            int     `json:"numero_ccb" validate:"required"`
 	IdProposta           int     `json:"id_proposta" validate:"required"`
 	UrlWebhook           string  `json:"url_webhook" validate:"required"`
-	DataVencimento       string  `json:"data_vencimento" validate:"required"`
-	DataExpiracao        string  `json:"data_expiracao" validate:"required"`
+	DataVencimento       string  `json:"data_vencimento" validate:"required,datetime=2006-01-02"`
+	DataExpiracao        string  `json:"data_expiracao" validate:"required,datetime=2006-01-02"`
 	NumeroParcela        int     `json:"numero_parcela" validate:"required"`
 	IdPropostaParcela    int     `json:"id_proposta_parcela" validate:"required"`
 	ValorParcela         float64 `json:"valor_parcela"`
-	TipoCobranca         int     `json:"id_forma_cobranca" validate:"required"`
+	TipoCobranca         int     `json:"id_forma_cobranca" validate:"required,oneof=2 3 7"`
 	IdConvenio           int     `json:"id_convenio"`
 	IdSecuritizadora     int     `json:"id_securitizadora"`
 }

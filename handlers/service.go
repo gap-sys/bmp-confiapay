@@ -18,7 +18,8 @@ type CobrancaService interface {
 	ConsultarCobranca(payload models.CobrancaTaskData) (models.ConsultaCobrancaResponse, string, int, error)
 	Cobranca(payload models.CobrancaTaskData) (any, string, int, error)
 	CancelarCobranca(payload models.CobrancaTaskData) (any, string, int, error)
-	FindByCodLiquidacao(codigoLiquidacao string) (models.CobrancaBMP, error)
-	FindByNumParcela(numParcela int) (models.CobrancaBMP, error)
+	FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int) (models.CobrancaBMP, error)
+	FindByNumParcela(numParcela int, numeroCCB int) (models.CobrancaBMP, error)
+	FindByDataVencimento(dataExpiracao string, numeroCCB int) (models.CobrancaBMP, error)
 	SendToDLQ(data any) error
 }

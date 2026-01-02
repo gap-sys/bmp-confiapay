@@ -9,6 +9,7 @@ type CancelarCobrancaFrontendInput struct {
 	CodigoLiquidacao     string `json:"codigo_liquidacao" validate:"required" `
 	NumeroCCB            int    `json:"numero_ccb" validate:"required"`
 	UrlWebhook           string `json:"url_webhook" validate:"required"`
+	NumeroParcela        int    `json:"numero_parcela" validate:"required"`
 	IdConvenio           int    `json:"id_convenio"`
 	IdSecuritizadora     int    `json:"id_securitizadora"`
 }

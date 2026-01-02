@@ -3,6 +3,7 @@ package service
 import (
 	"cobranca-bmp/cache"
 	"cobranca-bmp/config"
+	"cobranca-bmp/helpers"
 	"cobranca-bmp/models"
 	"context"
 	"errors"
@@ -112,6 +113,8 @@ func (a *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 		a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, data, "cobranca service"))
 	}
 
+	helpers.LogInfo(a.ctx, a.logger, a.loc, "geracao cobrancas", "200", fmt.Sprintf("Cobrança gerada, código liquidação:%s", data.Cobrancas[0].CodigoLiquidacao), nil)
+
 	return data, "", 200, nil
 }
 
@@ -150,7 +153,21 @@ func (a *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 	}
 
 	if payload.CalledAssync {
-		a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, errAPI, "cobranca service"))
+		switch payload.Status {
+		case config.STATUS_GERAR_COBRANCA, config.STATUS_CANCELAR_COBRANCA:
+			a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, errAPI, "cobranca service"))
+
+		case config.STATUS_CONSULTAR_COBRANCA:
+			var dlqData = models.DLQData{
+				Payload:  payload.ConsultarCobrancaInput,
+				Mensagem: "Erro ao buscar cobranças geradas",
+				Erro:     "Erro ao buscar cobranças geradas",
+				Contexto: "webhook cobranças",
+				Time:     time.Now().In(a.loc),
+			}
+			a.SendToDLQ(dlqData)
+
+		}
 	}
 
 	return nil, status, statusCode, errAPI
@@ -172,7 +189,7 @@ func (a *CobrancalService) GerarCobrancaParcela(payload *models.CobrancaTaskData
 			DtVencimento:        payload.GerarCobrancaInput.DataVencimento,
 			DtExpiracao:         payload.GerarCobrancaInput.DataExpiracao,
 			Liquidacao:          true,
-			PagamentoViaBoleto:  payload.TipoCobranca == config.TIPO_COBRANCA_BOLETOPIX,
+			PagamentoViaBoleto:  payload.TipoCobranca == config.TIPO_COBRANCA_BOLETOPIX || payload.TipoCobranca == config.TIPO_COBRANCA_BOLETO,
 			PagamentoViaPIX:     payload.TipoCobranca == config.TIPO_COBRANCA_PIX,
 			DescricaoLiquidacao: fmt.Sprintf("Parcela %d da proposta %d", payload.GerarCobrancaInput.NumeroParcela, payload.GerarCobrancaInput.IdProposta),
 			// VlrLiquidacao          :
@@ -208,7 +225,7 @@ func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 		DescricaoLiquidacao: fmt.Sprintf("Parcela %d da proposta %d", payload.GerarCobrancaInput.NumeroParcela, payload.GerarCobrancaInput.IdProposta),
 		NotificarCliente:    false,
 		TipoRegistro:        1,
-		PagamentoViaBoleto:  payload.TipoCobranca == config.TIPO_COBRANCA_BOLETOPIX,
+		PagamentoViaBoleto:  payload.TipoCobranca == config.TIPO_COBRANCA_BOLETOPIX || payload.TipoCobranca == config.TIPO_COBRANCA_BOLETO,
 		PagamentoViaPIX:     payload.TipoCobranca == config.TIPO_COBRANCA_PIX,
 		Parcelas: []models.ParcelaCobranca{
 			{
@@ -315,10 +332,14 @@ func (a *CobrancalService) ConsultarCobranca(payload models.CobrancaTaskData) (m
 	return data, status, statusCode, nil
 }
 
-func (c *CobrancalService) FindByCodLiquidacao(codigoLiquidacao string) (models.CobrancaBMP, error) {
-	return c.parcelaRepository.FindByCodLiquidacao(codigoLiquidacao)
+func (c *CobrancalService) FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int) (models.CobrancaBMP, error) {
+	return c.parcelaRepository.FindByCodLiquidacao(codigoLiquidacao, numeroCCB)
 }
 
-func (c *CobrancalService) FindByNumParcela(numParcela int) (models.CobrancaBMP, error) {
-	return c.parcelaRepository.FindByNumParcela(numParcela)
+func (c *CobrancalService) FindByNumParcela(numParcela int, numeroCCB int) (models.CobrancaBMP, error) {
+	return c.parcelaRepository.FindByNumParcela(numParcela, numeroCCB)
+}
+
+func (c *CobrancalService) FindByDataVencimento(dataExpiracao string, numeroCCB int) (models.CobrancaBMP, error) {
+	return c.parcelaRepository.FindByDataVencimento(dataExpiracao, numeroCCB)
 }

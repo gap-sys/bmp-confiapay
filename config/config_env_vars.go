@@ -73,6 +73,7 @@ var (
 )
 
 var (
+	TIPO_COBRANCA_BOLETO      = 2
 	TIPO_COBRANCA_PIX         = 3
 	TIPO_COBRANCA_BOLETOPIX   = 7
 	STATUS_CONSULTAR_COBRANCA = "consultar_cobranca"
