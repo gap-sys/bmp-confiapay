@@ -191,17 +191,16 @@ func (a *CobrancalService) GerarCobrancaParcela(payload *models.CobrancaTaskData
 		Dto: models.DtoCobranca{
 			CodigoProposta: payload.GerarCobrancaInput.NumeroAcompanhamento,
 			CodigoOperacao: strconv.Itoa(payload.GerarCobrancaInput.IdProposta),
-			NroParcelas:    []int{1},
+			NroParcelas:    []int{payload.GerarCobrancaInput.NumeroParcela},
 		},
 		DtoGerarUnicaLiquidacao: models.DtoGerarUnicaLiquidacao{
-			DtVencimento:        payload.GerarCobrancaInput.DataVencimento,
-			DtExpiracao:         payload.GerarCobrancaInput.DataExpiracao,
-			Liquidacao:          true,
-			PagamentoViaBoleto:  payload.TipoCobranca == config.TIPO_COBRANCA_BOLETOPIX || payload.TipoCobranca == config.TIPO_COBRANCA_BOLETO,
-			PagamentoViaPIX:     payload.TipoCobranca == config.TIPO_COBRANCA_PIX,
-			DescricaoLiquidacao: fmt.Sprintf("Parcela %d da proposta %d", payload.GerarCobrancaInput.NumeroParcela, payload.GerarCobrancaInput.IdProposta),
-			// VlrLiquidacao          :
-			// VlrDesconto            :
+			DtVencimento:            payload.GerarCobrancaInput.DataVencimento,
+			DtExpiracao:             payload.GerarCobrancaInput.DataExpiracao,
+			Liquidacao:              true,
+			PagamentoViaBoleto:      payload.TipoCobranca == config.TIPO_COBRANCA_BOLETOPIX || payload.TipoCobranca == config.TIPO_COBRANCA_BOLETO,
+			PagamentoViaPIX:         payload.TipoCobranca == config.TIPO_COBRANCA_PIX,
+			DescricaoLiquidacao:     fmt.Sprintf("Parcela %d da proposta %d", payload.GerarCobrancaInput.NumeroParcela, payload.GerarCobrancaInput.IdProposta),
+			VlrDesconto:             payload.GerarCobrancaInput.VlrDesconto,
 			PermiteDescapitalizacao: false,
 			TipoRegistro:            1,
 		},
@@ -241,6 +240,7 @@ func (a *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 				DtVencimento:            payload.GerarCobrancaInput.DataVencimento,
 				DtExpiracao:             payload.GerarCobrancaInput.DataExpiracao,
 				PermiteDescapitalizacao: false,
+				VlrDesconto:             payload.GerarCobrancaInput.VlrDesconto,
 			},
 		},
 	}

@@ -50,9 +50,10 @@ type WebhookTaskData struct {
 
 func NewWebhookTaskData(url string, data any, context string) WebhookTaskData {
 	return WebhookTaskData{
-		Data:    data,
-		Url:     url,
-		Retries: config.WEBHOOK_RETRIES,
+		Data: data,
+		Url:  url,
+		//	Retries: config.WEBHOOK_RETRIES,
+		Retries: 0,
 		Delay:   0,
 		Context: context,
 	}
@@ -61,6 +62,6 @@ func NewWebhookTaskData(url string, data any, context string) WebhookTaskData {
 
 func (w *WebhookTaskData) SetTry() {
 	w.Delay += config.WEBHOOK_DELAY
-	w.Retries--
+	w.Retries++
 
 }

@@ -90,6 +90,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 							parcelas = append(parcelas, p.NroParcela)
 
 						}*/
+					return
 
 				case 1:
 					/*

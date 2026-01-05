@@ -17,21 +17,22 @@ var HOMOLOG_LOCAL = false
 
 // Representa variáveis de ambiente globais que podem ser alteradas em runtime.
 type EnvVars struct {
-	TimeoutRetries        int           `json:"timeoutRetries"`        //Número de tentativas em caso de timeout
-	TimeoutDelay          int           `json:"timeoutDelay"`          //Delay entre uma tentativa e outra na fila,em caso de timeout
-	DbDelay               int           `json:"dbDelay"`               //Delay entre uma tentativa e outra na fila, em caso de falha ao atualizar o banco de dados
-	InitialDelay          int           `json:"initialDelay"`          //Delay inicial de uma simulação em fila.
-	RateLimitRetries      int           `json:"rateLimitRetries"`      //Número de tentativas em caso de rate limit
-	RateLimitDelay        int           `json:"rateLimitDelay"`        //Delay entre uma tentativa e outra na fila,em caso de rate limit
-	WebhookRetries        int           `json:"webhookRetries"`        //Número de tentativas em caso de falha no webhook
-	WebhookDelay          int           `json:"webhookDelay"`          //Delay entre uma tentativa e outra na fila,em caso de falha no webhook
-	WebhookKey            string        `json:"webhookKey"`            //Chave de autenticação do webhook do Confiapay
-	WebhookHash           string        `json:"webhookHash"`           //Hash passado no webhook do Confiapay
-	WebhookUrl            string        `json:"webhookUrl"`            //URL do webhook do Confiapay
-	DbMonitoringInterval  int           `json:"dbMonitoringInterval"`  //Intervalo de tempo em segundos que o DB será monitorado.
-	DbQueryTimeout        int           `json:"dbQueryTimeout"`        //Timeout em segundos de cada operação de uma transaction no db.
-	DbMonitoringMaxAlerts int           `json:"dbMonitoringMaxAlerts"` //Número máximo de alertas guardados pelo monitor do DB.
-	RedisTokenExpiration  time.Duration `json:"redisTokenExpiration"`  //Expiração de um token no Redis(em minutos)
+	TimeoutRetries         int           `json:"timeoutRetries"`          //Número de tentativas em caso de timeout
+	TimeoutDelay           int           `json:"timeoutDelay"`            //Delay entre uma tentativa e outra na fila,em caso de timeout
+	DbDelay                int           `json:"dbDelay"`                 //Delay entre uma tentativa e outra na fila, em caso de falha ao atualizar o banco de dados
+	InitialDelay           int           `json:"initialDelay"`            //Delay inicial de uma simulação em fila.
+	RateLimitRetries       int           `json:"rateLimitRetries"`        //Número de tentativas em caso de rate limit
+	RateLimitDelay         int           `json:"rateLimitDelay"`          //Delay entre uma tentativa e outra na fila,em caso de rate limit
+	WebhookRetries         int           `json:"webhookRetries"`          //Número de tentativas em caso de falha no webhook
+	WebhookDelay           int           `json:"webhookDelay"`            //Delay entre uma tentativa e outra na fila,em caso de falha no webhook
+	WebhookKey             string        `json:"webhookKey"`              //Chave de autenticação do webhook do Confiapay
+	WebhookHash            string        `json:"webhookHash"`             //Hash passado no webhook do Confiapay
+	WebhookUrl             string        `json:"webhookUrl"`              //URL do webhook do Confiapay
+	DbMonitoringInterval   int           `json:"dbMonitoringInterval"`    //Intervalo de tempo em segundos que o DB será monitorado.
+	DbQueryTimeout         int           `json:"dbQueryTimeout"`          //Timeout em segundos de cada operação de uma transaction no db.
+	DbMonitoringMaxAlerts  int           `json:"dbMonitoringMaxAlerts"`   //Número máximo de alertas guardados pelo monitor do DB.
+	RedisTokenExpiration   time.Duration `json:"redisTokenExpiration"`    //Expiração de um token no Redis(em minutos)
+	GerarMultipasCobrancas *bool         `json:"gerarMultiplasCobrancas"` //Define se será chamado ou não o endpoint de geração de múltiplas cobranças no BMP
 	//	IOF                   float64 `json:"iof"`                   //valor do IOF
 
 }
@@ -79,6 +80,7 @@ var (
 	STATUS_CONSULTAR_COBRANCA = "consultar_cobranca"
 	STATUS_GERAR_COBRANCA     = "gerar_cobranca"
 	STATUS_CANCELAR_COBRANCA  = "cancelar_cobranca"
+	GERAR_MULTIPLAS_COBRANCAS = true
 )
 
 var (
@@ -365,6 +367,12 @@ func SetEnvVars(env EnvVars) map[string]any {
 	if env.RedisTokenExpiration != 0 {
 		REDIS_TOKEN_EXP = time.Duration(env.RedisTokenExpiration) * time.Minute
 		changed["RedisTokenExpiration"] = REDIS_TOKEN_EXP.String()
+
+	}
+
+	if env.GerarMultipasCobrancas != nil {
+		GERAR_MULTIPLAS_COBRANCAS = *env.GerarMultipasCobrancas
+		changed["GerarMultiplasCobrancas"] = GERAR_MULTIPLAS_COBRANCAS
 
 	}
 

@@ -68,17 +68,17 @@ type DtoGerarUnicaLiquidacao struct {
 	PagamentoViaPIX         bool    `json:"pagamentoViaPIX"`
 	DescricaoLiquidacao     string  `json:"descricaoLiquidacao"`
 	VlrLiquidacao           float64 `json:"vlrLiquidacao,omitempty"`
-	VlrDesconto             float64 `json:"vlrDesconto"`
+	VlrDesconto             float64 `json:"vlrDesconto,omitempty"`
 	PermiteDescapitalizacao bool    `json:"permiteDescapitalizacao"`
 	TipoRegistro            int     `json:"tipoRegistro"`
 }
 
 type ParcelaCobranca struct {
-	NroParcela              int    `json:"nroParcela"`
-	DtVencimento            string `json:"dtVencimento"`
-	DtExpiracao             string `json:"dtExpiracao"`
-	VlrDesconto             int    `json:"vlrDesconto"`
-	PermiteDescapitalizacao bool   `json:"permiteDescapitalizacao"`
+	NroParcela              int     `json:"nroParcela"`
+	DtVencimento            string  `json:"dtVencimento"`
+	DtExpiracao             string  `json:"dtExpiracao"`
+	VlrDesconto             float64 `json:"vlrDesconto"`
+	PermiteDescapitalizacao bool    `json:"permiteDescapitalizacao"`
 }
 
 type Cobranca struct {

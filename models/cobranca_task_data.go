@@ -37,7 +37,7 @@ func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, num
 		RateLimitRetries:     config.RATE_LIMIT_MAX_RETRIES,
 		TimeoutRetries:       config.TIMEOUT_MAX_RETRIES,
 		CurrentDelay:         0,
-		MultiplasCobrancas:   true,
+		MultiplasCobrancas:   config.GERAR_MULTIPLAS_COBRANCAS,
 		CalledAssync:         false,
 		AuthPayload:          authPayload,
 		Status:               status,

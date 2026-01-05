@@ -17,6 +17,7 @@ type GerarCobrancaFrontendInput struct {
 	TipoCobranca         int     `json:"id_forma_cobranca" validate:"required,oneof=2 3 7"`
 	IdConvenio           int     `json:"id_convenio"`
 	IdSecuritizadora     int     `json:"id_securitizadora"`
+	VlrDesconto          float64 `json:"valor_desconto"`
 }
 
 func (g GerarCobrancaFrontendInput) Validate() error {
