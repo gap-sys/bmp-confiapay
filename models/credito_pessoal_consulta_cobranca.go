@@ -78,22 +78,22 @@ type ConsultaPix struct {
 }
 
 type ConsultaCobrancaLancamento struct {
-	DtVencimento         string `json:"dtVencimento"`
-	DtLancamento         string `json:"dtLancamento"`
-	VlrParcela           int    `json:"vlrParcela"`
-	VlrMulta             int    `json:"vlrMulta"`
-	VlrJuros             int    `json:"vlrJuros"`
-	VlrMora              int    `json:"vlrMora"`
-	VlrIOF               int    `json:"vlrIOF"`
-	VlrTarifas           int    `json:"vlrTarifas"`
-	VlrAbatimento        int    `json:"vlrAbatimento"`
-	VlrParcelaAtualizado int    `json:"vlrParcelaAtualizado"`
-	VlrPagamento         int    `json:"vlrPagamento"`
-	VlrSaldoParcela      int    `json:"vlrSaldoParcela"`
-	VlrDesconto          int    `json:"vlrDesconto"`
-	InformarFundo        bool   `json:"informarFundo"`
-	DescLancamento       string `json:"descLancamento"`
-	ViaBoleto            bool   `json:"viaBoleto"`
+	DtVencimento         string  `json:"dtVencimento"`
+	DtLancamento         string  `json:"dtLancamento"`
+	VlrParcela           float64 `json:"vlrParcela"`
+	VlrMulta             float64 `json:"vlrMulta"`
+	VlrJuros             float64 `json:"vlrJuros"`
+	VlrMora              float64 `json:"vlrMora"`
+	VlrIOF               float64 `json:"vlrIOF"`
+	VlrTarifas           float64 `json:"vlrTarifas"`
+	VlrAbatimento        float64 `json:"vlrAbatimento"`
+	VlrParcelaAtualizado float64 `json:"vlrParcelaAtualizado"`
+	VlrPagamento         float64 `json:"vlrPagamento"`
+	VlrSaldoParcela      float64 `json:"vlrSaldoParcela"`
+	VlrDesconto          float64 `json:"vlrDesconto"`
+	InformarFundo        bool    `json:"informarFundo"`
+	DescLancamento       string  `json:"descLancamento"`
+	ViaBoleto            bool    `json:"viaBoleto"`
 }
 
 type ConsultaCobrancaFrontEndInput struct {
