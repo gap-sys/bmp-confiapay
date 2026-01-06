@@ -3,11 +3,12 @@ package models
 import "os"
 
 type UpdateDbData struct {
-	IdPropostaParcela    int                            `json:"idPropostaParcela"`
-	CodigoLiquidacao     string                         `json:"codigoLiquidacao"`
-	Action               string                         `json:"action"`
-	GeracaoParcela       *GerarCobrancaFrontendInput    `json:"geracaoParcela"`
-	CancelamentoCobranca *CancelarCobrancaFrontendInput `json:"cancelamentoCobranca"`
+	IdPropostaParcela    int                             `json:"idPropostaParcela"`
+	CodigoLiquidacao     string                          `json:"codigoLiquidacao"`
+	Action               string                          `json:"action"`
+	GeracaoParcela       *GerarCobrancaFrontendInput     `json:"geracaoParcela"`
+	CancelamentoCobranca *CancelarCobrancaFrontendInput  `json:"cancelamentoCobranca"`
+	LancamentoParcela    *LancamentoParcelaFrontendInput `json:"lancamentoParcela"`
 }
 
 type DbLogfileData struct {

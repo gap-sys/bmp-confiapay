@@ -132,13 +132,23 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					}
 
 					var whData = make(map[string]any)
-					whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
-					whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
-					whData["data_pagamento"] = lancamento.DtEvento
-					whData["valor_pago"] = lancamento.LancamentoParcela.VlrPagamento
-					whData["valor_encargo"] = lancamento.LancamentoParcela.VlrEncargos
-					whData["valor_desconto"] = lancamento.LancamentoParcela.VlrDesconto
-					whData["operacao"] = "P"
+
+					if lancamento.LancamentoParcela.VlrDesconto >= 0 {
+
+						whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
+						whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
+						whData["data_pagamento"] = lancamento.DtEvento
+						whData["valor_pago"] = lancamento.LancamentoParcela.VlrPagamento
+						whData["valor_encargo"] = lancamento.LancamentoParcela.VlrEncargos
+						whData["valor_desconto"] = lancamento.LancamentoParcela.VlrDesconto
+						whData["operacao"] = "P"
+					} else {
+						whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
+						whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
+						whData["saldo"] = lancamento.LancamentoParcela.VlrSaldo
+						whData["operacao"] = "S"
+
+					}
 
 					w.webhookService.RequestToWebhook(models.NewWebhookTaskData(cobrancaInfo.UrlWebhook, whData, "cancelamento-cobranca"))
 
@@ -242,12 +252,24 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					json.Unmarshal(rawBody, &registroCobranca)
 					//helpers.LogError(c.Context(), w.logger, w.location, "webhook cobranças", "", "Não foi possível encontrar parcela", nil, input
 					bodyProcessed = true
-					cobrancaInfo, err := w.cobrancaService.FindByCodLiquidacao(registroCobranca.GeracaoCobranca.CodigoLiquidacao, input.NroProposta)
+
+					var cobrancaInfo models.CobrancaBMP
+					var err error
+					var msg string
+
+					if len(registroCobranca.GeracaoCobranca.Parcelas) >= 1 {
+						cobrancaInfo, err = w.cobrancaService.FindByNumParcela(registroCobranca.GeracaoCobranca.Parcelas[0], input.NroProposta)
+						msg = "Erro ao buscar cobranca por número de parcela"
+					} else {
+						cobrancaInfo, err = w.cobrancaService.FindByCodLiquidacao(registroCobranca.GeracaoCobranca.CodigoLiquidacao, input.NroProposta)
+						msg = "Erro ao buscar cobranca por código de liquidação"
+
+					}
 					if err != nil {
 						var dlqData = models.DLQData{
 							Payload:  resp,
-							Mensagem: "Erro ao buscar cobranca por código de liquidação",
-							Erro:     "Erro ao buscar cobranca por código de liquidação",
+							Mensagem: msg,
+							Erro:     msg,
 							Contexto: "webhook cobranças",
 							Time:     time.Now().In(w.location),
 						}

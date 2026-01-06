@@ -170,6 +170,53 @@ func (c *CobrancaClient) CancelarCobranca(payload models.CancelarCobrancaInput, 
 
 }
 
+func (c *CobrancaClient) LancamentoParcela(payload models.LancamentoParcelaAPIInput, token string, idempotencyKey string) (any, int, string, error) {
+	url := fmt.Sprintf("%s/%s", c.baseUrl, "AgendaRecebivel/IncluirLancamentoParcela")
+
+	req, err := c.newRequest(http.MethodPost, url, payload)
+	if err != nil {
+		return nil, 500, config.API_STATUS_ERR, models.NewAPIError(config.ERR_INTERNAL_SERVER_STR, err.Error(), "")
+	}
+	req.Header.Set("Authorization", token)
+	req.Header.Set("IdempotencyKey", idempotencyKey)
+
+	resp, err := c.doRequest(req)
+	if err != nil {
+		return nil, 500, config.API_STATUS_ERR, models.NewAPIError(config.ERR_INTERNAL_SERVER_STR, err.Error(), "")
+	}
+	defer resp.Body.Close()
+
+	rawBody, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		var status string
+		var APIErr models.APIError
+		json.Unmarshal(rawBody, &APIErr)
+
+		switch resp.StatusCode {
+		case http.StatusGatewayTimeout, http.StatusRequestTimeout:
+			status = config.API_STATUS_TIMEOUT
+		case http.StatusTooManyRequests:
+			status = config.API_STATUS_RATE_LIMIT
+		case http.StatusUnauthorized:
+			status = config.API_STATUS_UNAUTHORIZED
+			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.DTO.CodigoOperacao)
+
+		default:
+			status = config.API_STATUS_ERR
+
+		}
+		return nil, resp.StatusCode, status, APIErr
+	}
+
+	var data any
+	if err := json.Unmarshal(rawBody, &data); err != nil {
+		return models.ConsultaCobrancaResponse{}, 500, config.API_STATUS_ERR, models.NewAPIError(config.ERR_INTERNAL_SERVER_STR, err.Error(), "")
+	}
+
+	return data, 200, "", nil
+
+}
+
 func (c *CobrancaClient) ConsultarCobranca(payload models.ConsultarDetalhesInput, token string, idempotencyKey string) (models.ConsultaCobrancaResponse, int, string, error) {
 	url := fmt.Sprintf("%s/%s", c.baseUrl, "AgendaRecebivel/ConsultarDetalhes")
 

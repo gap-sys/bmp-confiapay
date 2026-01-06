@@ -21,5 +21,5 @@ type WebhookService interface {
 
 type CobrancaCreditoPessoalService interface {
 	Service
-	Cobranca(payload models.CobrancaTaskData) (any, string, int, error)
+	Cobranca(payload *models.CobrancaTaskData) (any, string, int, error)
 }

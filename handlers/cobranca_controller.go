@@ -36,6 +36,7 @@ func (a *CobrancaCreditoPessoalController) Route(r fiber.Router) {
 	r.Post("/consulta", a.ConsultarCobrancas())
 	r.Post("/cancelamento", a.CancelarCobranca())
 	r.Post("/geracao", a.GerarCobranca())
+	r.Post("/lancamento", a.LancamentoParcela())
 
 }
 
@@ -136,8 +137,55 @@ func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 		cancelamentoTaskData.CancelamentoCobranca = bmpPayload
 		cancelamentoTaskData.CancelamentoData = input
 		cancelamentoTaskData.IdPropostaParcela = input.IdPropostaParcela
+		cancelamentoTaskData.WebhookUrl = input.UrlWebhook
 
-		data, _, statusCode, err := a.cobrancaService.CancelarCobranca(cancelamentoTaskData)
+		data, _, statusCode, err := a.cobrancaService.Cobranca(cancelamentoTaskData)
+
+		//var resp = models.NewAPIError("", "O cancelamento de cobranças entrou em processamento. Aguarde!", strconv.Itoa(input.IdProposta))
+		if err != nil {
+			return c.Status(statusCode).JSON(err)
+		}
+		//resp.HasError = false
+		return c.Status(fiber.StatusOK).JSON(data)
+	}
+}
+
+// LancamentoParcela godoc
+//
+//	@Summary		Realizar Lançamento Na Parcela.
+//	@Description	Realiza o lançamento de pagamentos,descontos e saldo em uma parcela.
+//	@Tags			CreditoPessoal
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body	models.LancamentoParcelaFrontendInput	true  "Dados da parcela."
+//	@Success		200		{object}	models.APIResponse
+//	@Failure		422		{object}	models.APIError
+//	@Router			/lancamento [post]
+func (a *CobrancaCreditoPessoalController) LancamentoParcela() fiber.Handler {
+
+	return func(c *fiber.Ctx) error {
+		var input models.LancamentoParcelaFrontendInput
+
+		err := c.BodyParser(&input)
+		if err != nil {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(models.NewAPIError(config.ERR_PARSE_STR, helpers.ParseJsonError(err.Error()), ""))
+		}
+		if err := input.Validate(); err != nil {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
+		}
+
+		var authPayload = models.AuthPayload{
+			IdConvenio:       input.IdConvenio,
+			IdSecuritizadora: input.IdSecuritizadora,
+			Id:               strconv.Itoa(input.IdPropostaParcela),
+		}
+
+		var lancamentoTaskData = models.NewCobrancaTastkData(a.cache.GenID(), config.STATUS_LANCAMENTO_PARCELA, input.IdProposta, input.NumeroAcompanhamento, authPayload)
+		lancamentoTaskData.IdPropostaParcela = input.IdPropostaParcela
+		lancamentoTaskData.LancamentoParcela = input
+		lancamentoTaskData.WebhookUrl = input.UrlWebhook
+
+		data, _, statusCode, err := a.cobrancaService.Cobranca(lancamentoTaskData)
 
 		//var resp = models.NewAPIError("", "O cancelamento de cobranças entrou em processamento. Aguarde!", strconv.Itoa(input.IdProposta))
 		if err != nil {

@@ -45,7 +45,7 @@ func (w *WebhookService) RequestToWebhook(data models.WebhookTaskData) error {
 	err := w.client.RequestToWebhook(data.Data, data.Url)
 	if err != nil {
 		data.SetTry()
-		w.queue.Produce(config.WEBHOOK_QUEUE, data, data.Delay)
+		//w.queue.Produce(config.WEBHOOK_QUEUE, data, data.Delay)
 		return err
 	}
 	return nil

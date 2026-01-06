@@ -57,7 +57,7 @@ func (r *RabbitMQ) ConsumeCobranca() {
 			"delay":            payload.CurrentDelay,
 		})
 
-		_, _, _, err = r.cobrancaService.Cobranca(payload)
+		_, _, _, err = r.cobrancaService.Cobranca(&payload)
 		if err != nil {
 			if err := msg.Nack(false, false); err != nil {
 				var dlqData = models.DLQData{

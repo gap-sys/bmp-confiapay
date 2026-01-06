@@ -80,6 +80,7 @@ var (
 	STATUS_CONSULTAR_COBRANCA = "consultar_cobranca"
 	STATUS_GERAR_COBRANCA     = "gerar_cobranca"
 	STATUS_CANCELAR_COBRANCA  = "cancelar_cobranca"
+	STATUS_LANCAMENTO_PARCELA = "lancamento_parcela"
 	GERAR_MULTIPLAS_COBRANCAS = true
 )
 

@@ -2,36 +2,42 @@ package models
 
 import (
 	"cobranca-bmp/config"
+	"cobranca-bmp/helpers"
 	"fmt"
+	"math/rand"
+	"strconv"
 	"time"
 )
 
 type CobrancaTaskData struct {
-	IdProposta             int                           `json:"idProposta"`
-	WebhookUrl             string                        `json:"urlWebhook"`
-	IdempotencyKey         string                        `json:"idempotencyKey,omitempty"`
-	IdPropostaParcela      int                           `json:"idPropostaParcela"`
-	TimeoutRetries         int64                         `json:"timeoutRetries"`
-	MultiplasCobrancas     bool                          `json:"multiplasCobrancas"`
-	TipoCobranca           int                           `json:"tipoCobranca"`
-	NumeroCCB              int                           `json:"numeroCCB"`
-	RateLimitRetries       int64                         `json:"rateLimitRetries"`
-	TimeoutDelay           time.Duration                 `json:"timeoutDelay"`
-	CurrentDelay           time.Duration                 `json:"currentDelay"`
-	Token                  string                        `json:"token,omitempty"`
-	Status                 string                        `json:"status"`
-	NumeroAcompanhamento   string                        `json:"numeroAcompanhamento"`
-	AuthPayload            AuthPayload                   `json:"authPayload"`
-	GerarCobrancaInput     GerarCobrancaFrontendInput    `json:"gerarCobrancaInput"`
-	CancelamentoData       CancelarCobrancaFrontendInput `json:"cancelamentoData"`
-	CancelamentoCobranca   CancelarCobrancaInput         `json:"cancelamentoCobranca"`
-	ConsultarCobrancaInput ConsultarDetalhesInput        `json:"consultarCobrancaInput"`
-	CalledAssync           bool                          `json:"calledAssync"`
-	CobrancaDBInfo         CobrancaBMP                   `json:"cobrancaDBInfo"`
+	IdProposta             int                            `json:"idProposta"`
+	WebhookUrl             string                         `json:"urlWebhook"`
+	IdempotencyKey         string                         `json:"idempotencyKey,omitempty"`
+	IdPropostaParcela      int                            `json:"idPropostaParcela"`
+	TimeoutRetries         int64                          `json:"timeoutRetries"`
+	MultiplasCobrancas     bool                           `json:"multiplasCobrancas"`
+	TipoCobranca           int                            `json:"tipoCobranca"`
+	NumeroCCB              int                            `json:"numeroCCB"`
+	RateLimitRetries       int64                          `json:"rateLimitRetries"`
+	TimeoutDelay           time.Duration                  `json:"timeoutDelay"`
+	CurrentDelay           time.Duration                  `json:"currentDelay"`
+	Token                  string                         `json:"token,omitempty"`
+	Status                 string                         `json:"status"`
+	NumeroAcompanhamento   string                         `json:"numeroAcompanhamento"`
+	AuthPayload            AuthPayload                    `json:"authPayload"`
+	GerarCobrancaInput     GerarCobrancaFrontendInput     `json:"gerarCobrancaInput"`
+	CancelamentoData       CancelarCobrancaFrontendInput  `json:"cancelamentoData"`
+	LancamentoParcela      LancamentoParcelaFrontendInput `json:"lancamentoParcela"`
+	LancamentoParcelaInput LancamentoParcelaAPIInput      `json:"lancamentoParcelaInput"`
+	CancelamentoCobranca   CancelarCobrancaInput          `json:"cancelamentoCobranca"`
+	ConsultarCobrancaInput ConsultarDetalhesInput         `json:"consultarCobrancaInput"`
+	CalledAssync           bool                           `json:"calledAssync"`
+	WhData                 map[string]any
+	CobrancaDBInfo         CobrancaBMP `json:"cobrancaDBInfo"`
 }
 
-func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, numeroAcompanhamento string, authPayload AuthPayload) CobrancaTaskData {
-	var c = CobrancaTaskData{
+func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, numeroAcompanhamento string, authPayload AuthPayload) *CobrancaTaskData {
+	var c = &CobrancaTaskData{
 		IdProposta:           IdProposta,
 		NumeroAcompanhamento: numeroAcompanhamento,
 		RateLimitRetries:     config.RATE_LIMIT_MAX_RETRIES,
@@ -41,6 +47,7 @@ func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, num
 		CalledAssync:         false,
 		AuthPayload:          authPayload,
 		Status:               status,
+		WhData:               nil,
 	}
 	c.GenIdempotencyKey(idempotencyKey)
 
@@ -73,5 +80,35 @@ func (a *CobrancaTaskData) Validate() error {
 }
 
 func (c *CobrancaTaskData) GenIdempotencyKey(base int) {
-	c.IdempotencyKey = fmt.Sprintf("%d:%d", base, c.IdProposta)
+	c.IdempotencyKey = helpers.GenerateIdempotencyKey(fmt.Sprintf("%d:%d:%d", base, c.IdProposta, rand.NewSource(10).Int63()))
+}
+
+func (c *CobrancaTaskData) FormatLancamento() LancamentoParcelaAPIInput {
+
+	var bmpPayload = LancamentoParcelaAPIInput{
+		DTO: DTOPropostaParcela{
+			CodigoOperacao: strconv.Itoa(c.IdProposta),
+			CodigoProposta: c.LancamentoParcela.NumeroAcompanhamento,
+			NroParcela:     c.LancamentoParcela.NumeroParcela,
+		},
+		DTOLancamentoParcela: DTOLancamentoParcela{
+			DtPagamento:             c.LancamentoParcela.DataLancamento,
+			PermiteDescapitalizacao: false,
+		},
+	}
+
+	switch c.LancamentoParcela.Operacao {
+	case "S":
+		bmpPayload.DTOLancamentoParcela.VlrPagamento = 0.01
+		bmpPayload.DTOLancamentoParcela.VlrDesconto = helpers.Round(-1*(c.LancamentoParcela.ValorDesconto+0.01), 2)
+		bmpPayload.DTOLancamentoParcela.DescricaoLancamento = "S"
+
+	case "P":
+		bmpPayload.DTOLancamentoParcela.VlrPagamento = c.LancamentoParcela.ValorLancamento
+		bmpPayload.DTOLancamentoParcela.VlrDesconto = c.LancamentoParcela.ValorDesconto
+		bmpPayload.DTOLancamentoParcela.DescricaoLancamento = "P"
+
+	}
+
+	return bmpPayload
 }

@@ -32,7 +32,7 @@ func (s *ParcelaRepo) SetDB(db *sql.DB) {
 
 }
 
-func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInput, codigoLiquidacao string) (bool, error) {
+func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInput) (bool, error) {
 
 	now := time.Now().In(s.location)
 
@@ -79,7 +79,6 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
     id_securitizadora,
 	id_convenio,
     numero_acompanhamento,
-    codigo_liquidacao,
     numero_ccb,
     url_webhook,
     id_proposta_parcela,
@@ -100,8 +99,8 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
     $9,  
     $10, 
     $11, 
-    $12,
-	$13
+    $12
+	
 
 )
 ON CONFLICT (id_proposta_parcela)
@@ -110,7 +109,6 @@ DO UPDATE SET
     id_securitizadora     = EXCLUDED.id_securitizadora,
 	id_convenio            = EXCLUDED.id_convenio,
     numero_acompanhamento = EXCLUDED.numero_acompanhamento,
-    codigo_liquidacao     = EXCLUDED.codigo_liquidacao,
     numero_ccb            = EXCLUDED.numero_ccb,
     url_webhook           = EXCLUDED.url_webhook,
 	id_proposta_parcela   = EXCLUDED.id_proposta_parcela,
@@ -124,7 +122,6 @@ DO UPDATE SET
 		data.IdSecuritizadora,
 		data.IdConvenio,
 		data.NumeroAcompanhamento,
-		codigoLiquidacao,
 		data.NumeroCCB,
 		data.UrlWebhook,
 		data.IdPropostaParcela,
@@ -245,6 +242,104 @@ DO UPDATE SET
 	return false, nil
 }
 
+func (s *ParcelaRepo) UpdateLancamentoParcela(data models.LancamentoParcelaFrontendInput) (bool, error) {
+
+	now := time.Now().In(s.location)
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
+	defer cancel()
+	/*
+			_, err := s.db.ExecContext(ctx, `
+			UPDATE
+			      bmp_cobrancas
+			SET
+			    id_proposta=$1,
+		        id_securitizadora=$2,
+		        numero_acompanhamento=$3,
+		        codigo_liquidacao"=$4,
+		        numero_ccb=$5,
+		        url_webhook=$6,
+		        id_proposta_parcela=$7,
+		        data_vencimento=$8,
+		        data_expiracao=$9,
+		        parcela=$10,
+		        id_forma_cobranca=$11,
+				updated_at=$12
+
+
+
+				 where id_proposta_parcela=$13`,
+				data.IdProposta,
+				data.IdSecuritizadora,
+				data.NumeroAcompanhamento,
+				codigoLiquidacao,
+				data.NumeroCCB,
+				data.UrlWebhook, data.IdPropostaParcela,
+				data.DataVencimento,
+				data.DataExpiracao,
+				data.NumeroParcela,
+				data.TipoCobranca,
+				now,
+				data.IdPropostaParcela,
+			) */
+
+	_, err := s.db.ExecContext(ctx, `
+	INSERT INTO bmp_cobrancas (
+    id_proposta,
+    id_securitizadora,
+	id_convenio,
+    numero_acompanhamento,
+    numero_ccb,
+    url_webhook,
+    id_proposta_parcela,
+	parcela,
+    updated_at
+) VALUES (
+    $1,  
+    $2,  
+    $3,  
+    $4,  
+    $5,  
+    $6,  
+    $7, 
+    $8,
+	$9
+	
+	
+	
+)
+ON CONFLICT (id_proposta_parcela)
+DO UPDATE SET
+    id_proposta           = EXCLUDED.id_proposta,
+    id_securitizadora     = EXCLUDED.id_securitizadora,
+	id_convenio            = EXCLUDED.id_convenio,
+    numero_acompanhamento = EXCLUDED.numero_acompanhamento,
+    numero_ccb            = EXCLUDED.numero_ccb,
+    url_webhook           = EXCLUDED.url_webhook,
+	id_proposta_parcela   = EXCLUDED.id_proposta_parcela,
+	parcela        = EXCLUDED.parcela,
+    updated_at            = EXCLUDED.updated_at
+	`,
+		data.IdProposta,
+		data.IdSecuritizadora,
+		data.IdConvenio,
+		data.NumeroAcompanhamento,
+		data.NumeroCCB,
+		data.UrlWebhook,
+		data.IdPropostaParcela,
+		data.NumeroParcela,
+		now,
+	)
+
+	if err != nil {
+		//	var logData = map[string]any{s}
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela bmp_cobrancas", err.Error(), data)
+		return isConnError(s.db, err), err
+	}
+
+	return false, nil
+}
+
 func (s *ParcelaRepo) UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidacao string) (bool, error) {
 
 	now := time.Now().In(s.location)
@@ -255,7 +350,7 @@ func (s *ParcelaRepo) UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidaca
 	UPDATE
 	      bmp_cobrancas 
 	SET  
-        codigo_liquidacao"=$1, 
+        codigo_liquidacao=$1, 
 		updated_at=$2     
 	WHERE
 	     id_proposta_parcela=$3`,
