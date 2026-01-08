@@ -180,7 +180,13 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 		c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, data, "cobranca service"))
 	}
 
-	helpers.LogInfo(c.ctx, c.logger, c.loc, "geracao cobrancas", "200", fmt.Sprintf("Cobrança gerada, código liquidação:%s", data.Cobrancas[0].CodigoLiquidacao), nil)
+	var cobrancaGeradaInfo = map[string]any{
+		"id_proposta":         payload.GerarCobrancaInput.IdProposta,
+		"id_proposta_parcela": payload.IdPropostaParcela,
+		"codigo_liquidacao":   data.Cobrancas[0].CodigoLiquidacao,
+	}
+
+	helpers.LogInfo(c.ctx, c.logger, c.loc, "cobranca service", "200", "Cobrança gerada", cobrancaGeradaInfo)
 
 	return data, "", 200, nil
 }
