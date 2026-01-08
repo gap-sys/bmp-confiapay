@@ -84,7 +84,7 @@ func (c *CobrancalService) Cobranca(payload *models.CobrancaTaskData) (any, stri
 		return data, status, statusCode, err
 
 	case config.STATUS_CONSULTAR_COBRANCA:
-		data, status, statusCode, err := c.ConsultarCobranca(payload)
+		data, status, statusCode, err := c.ConsultarCobranca(payload, true)
 
 		if err != nil {
 			if payload.CalledAssync {
@@ -97,7 +97,7 @@ func (c *CobrancalService) Cobranca(payload *models.CobrancaTaskData) (any, stri
 		return data, status, statusCode, err
 
 	case config.STATUS_GERAR_COBRANCA:
-		c.GerarCobranca(payload)
+		return c.GerarCobranca(payload)
 
 	case config.STATUS_LANCAMENTO_PARCELA:
 		data, status, statusCode, err := c.LancamentoParcela(payload)
@@ -111,8 +111,10 @@ func (c *CobrancalService) Cobranca(payload *models.CobrancaTaskData) (any, stri
 
 		return data, status, statusCode, err
 
+	default:
+		return nil, "", 500, models.NewAPIError("", "Status inválido", payload.AuthPayload.Id)
+
 	}
-	return nil, "", 500, models.NewAPIError("", "Status inválido", payload.AuthPayload.Id)
 
 }
 
@@ -127,7 +129,10 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 		Action:         "update_geracao",
 	}, false)
 
-	/*
+	payload.CobrancaDBInfo.IdFormaCobranca = payload.GerarCobrancaInput.TipoCobranca
+
+	cobrancaInfo, _ := c.parcelaRepository.FindByNumParcela(payload.GerarCobrancaInput.NumeroParcela, payload.GerarCobrancaInput.NumeroCCB)
+	if cobrancaInfo.CodigoLiquidacao != "" {
 		payload.ConsultarCobrancaInput = models.ConsultarDetalhesInput{
 			DTO: models.DtoCobranca{
 				CodigoProposta: payload.GerarCobrancaInput.NumeroAcompanhamento,
@@ -138,15 +143,18 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 				TrazerBoleto: true,
 			},
 		}
+		_, _, _, err := c.ConsultarCobranca(payload, false)
 
-		payload.CobrancaDBInfo.IdFormaCobranca = payload.GerarCobrancaInput.TipoCobranca
-		_, _, _, err := a.ConsultarCobranca(payload)
 		if err == nil && payload.WhData != nil && payload.WebhookUrl != "" {
-			payload.WhData["online"] = true
-			a.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, payload.WhData, "cobranca service"))
+			payload.WhData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
+			payload.WhData["id_proposta_parcela"] = payload.IdPropostaParcela
+			go c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, payload.WhData, "cobranca service"))
 			return map[string]string{"msg": "cobrança já foi gerada"}, "", 200, nil
 
-		}*/
+		}
+
+		payload.GenIdempotencyKey(c.cache.GenID())
+	}
 
 	if payload.MultiplasCobrancas {
 
@@ -337,7 +345,7 @@ func (c *CobrancalService) LancamentoParcela(payload *models.CobrancaTaskData) (
 	return data, status, statusCode, nil
 }
 
-func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData) (models.ConsultaCobrancaResponse, string, int, error) {
+func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData, callBack bool) (models.ConsultaCobrancaResponse, string, int, error) {
 
 	data, statusCode, status, err := c.client.ConsultarCobranca(payload.ConsultarCobrancaInput, payload.Token, payload.IdempotencyKey)
 
@@ -368,6 +376,9 @@ func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData) (
 	case config.TIPO_COBRANCA_BOLETOPIX:
 		if len(data.Parcelas[0].Boletos) < 1 {
 			return models.ConsultaCobrancaResponse{}, "", 404, models.NewAPIError("", "Boleto não encontrado", strconv.Itoa(payload.IdPropostaParcela))
+		} else if data.Parcelas[0].Boletos[0].UrlImpressao == "" {
+			return models.ConsultaCobrancaResponse{}, "", 404, models.NewAPIError("", "Url de boleto não retornada", strconv.Itoa(payload.IdPropostaParcela))
+
 		}
 
 		whData["boleto"] = data.Parcelas[0].Boletos
@@ -375,6 +386,9 @@ func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData) (
 	case config.TIPO_COBRANCA_PIX:
 		if len(data.Parcelas[0].Pix) < 1 {
 			return models.ConsultaCobrancaResponse{}, "", 404, models.NewAPIError("", "Pix não encontrado", strconv.Itoa(payload.IdPropostaParcela))
+		} else if data.Parcelas[0].Pix[0].Imagem != "" || data.Parcelas[0].Pix[0].Emv != "" {
+			return models.ConsultaCobrancaResponse{}, "", 404, models.NewAPIError("", "QR code de pix não retornado", strconv.Itoa(payload.IdPropostaParcela))
+
 		}
 
 		whData["pix"] = data.Parcelas[0].Pix
@@ -382,7 +396,7 @@ func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData) (
 
 	payload.WhData = whData
 
-	if payload.WebhookUrl != "" {
+	if payload.WebhookUrl != "" && callBack {
 		c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "consulta-cobranca"))
 	}
 
@@ -391,6 +405,14 @@ func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData) (
 
 func (c *CobrancalService) FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int) (models.CobrancaBMP, error) {
 	return c.parcelaRepository.FindByCodLiquidacao(codigoLiquidacao, numeroCCB)
+}
+
+func (c *CobrancalService) UpdateCodLiquidacao(idPropostaParcela int, codigoLiquidacao string) (bool, error) {
+	return c.updateService.UpdateCodLiquidacao(models.UpdateDbData{
+		CodigoLiquidacao:  codigoLiquidacao,
+		IdPropostaParcela: idPropostaParcela,
+		Action:            "update_codigo_liquidacao",
+	}, false)
 }
 
 func (c *CobrancalService) FindByNumParcela(numParcela int, numeroCCB int) (models.CobrancaBMP, error) {

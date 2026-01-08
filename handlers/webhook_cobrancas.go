@@ -222,7 +222,6 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 							Contexto: "webhook cobranças",
 							Time:     time.Now().In(w.location),
 						}
-
 						w.webhookService.SendToDLQ(dlqData)
 						return
 
@@ -232,8 +231,8 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
 					whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
 					whData["operacao"] = "C"
-
 					w.webhookService.RequestToWebhook(models.NewWebhookTaskData(cobrancaInfo.UrlWebhook, whData, "cancelamento-cobranca"))
+					w.cobrancaService.UpdateCodLiquidacao(cobrancaInfo.IdPropostaParcela, "")
 
 					return
 
@@ -328,6 +327,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					whData["operacao"] = "C"
 
 					w.webhookService.RequestToWebhook(models.NewWebhookTaskData(cobrancaInfo.UrlWebhook, whData, "cancelamento-cobranca"))
+					w.cobrancaService.UpdateCodLiquidacao(cobrancaInfo.IdPropostaParcela, "")
 
 					return
 

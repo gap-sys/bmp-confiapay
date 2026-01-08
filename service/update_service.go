@@ -45,7 +45,7 @@ func (u *UpdateService) UpdateAssync(data models.UpdateDbData) (bool, error) {
 	var noConn bool
 
 	switch data.Action {
-	case "update_cod_liquidacao":
+	case "update_codigo_liquidacao":
 		noConn, err = u.UpdateCodLiquidacao(data, true)
 
 	case "update_geracao":

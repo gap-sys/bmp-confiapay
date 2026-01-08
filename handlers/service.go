@@ -15,11 +15,12 @@ type TokenService interface {
 
 type CobrancaService interface {
 	//	Auth(key string, client string) (string, error)
-	ConsultarCobranca(payload *models.CobrancaTaskData) (models.ConsultaCobrancaResponse, string, int, error)
+	//	ConsultarCobranca(payload *models.CobrancaTaskData) (models.ConsultaCobrancaResponse, string, int, error)
 	Cobranca(payload *models.CobrancaTaskData) (any, string, int, error)
 	//CancelarCobranca(payload *models.CobrancaTaskData) (any, string, int, error)
 	FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int) (models.CobrancaBMP, error)
 	FindByNumParcela(numParcela int, numeroCCB int) (models.CobrancaBMP, error)
 	FindByDataVencimento(dataExpiracao string, numeroCCB int) (models.CobrancaBMP, error)
+	UpdateCodLiquidacao(idPropostaParcela int, codigoLiquidacao string) (bool, error)
 	SendToDLQ(data any) error
 }
