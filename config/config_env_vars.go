@@ -5,7 +5,6 @@ import (
 	"strings"
 	"sync"
 
-	"os"
 	"strconv"
 	"time"
 
@@ -146,79 +145,79 @@ func LoadEnvVar(files ...string) error {
 
 // Recupera as variáveis de ambiente setadas em LoadEnvVar e as atribui a variáveis que serão utilizadas no programa.
 func InitializeEnvVar() error {
-	DADOS_BANCARIOS_QUEUE = os.Getenv("DADOS_BANCARIOS_QUEUE")
-	DB_QUEUE = os.Getenv("DB_QUEUE")
-	BMP_EXCHANGE = os.Getenv("BMP_EXCHANGE")
-	DLQ_EXCHANGE = os.Getenv("DLQ_EXCHANGE")
-	DLQ_QUEUE = os.Getenv("DLQ_QUEUE")
-	BASE_URL = os.Getenv("BASE_URL")
-	AUTH_URL = os.Getenv("AUTH_URL")
-	RABBITMQ_URL = os.Getenv("RABBITMQ_URL")
-	REDIS_URL = os.Getenv("REDIS_URL")
-	REDIS_DBCH = os.Getenv("REDIS_DBCH")
-	API_KEY = os.Getenv("API_KEY")
-	WEBHOOK_KEY = os.Getenv("WEBHOOK_KEY")
-	WEBHOOK_HASH = os.Getenv("WEBHOOK_HASH")
-	WEBHOOK_QUEUE = os.Getenv("WEBHOOK_QUEUE")
-	WEBHOOK_LIBERACAO_URL = os.Getenv("WEBHOOK_LIBERACAO_URL")
-	COBRANCA_QUEUE = os.Getenv("COBRANCA_QUEUE")
+	DADOS_BANCARIOS_QUEUE = getEnv("DADOS_BANCARIOS_QUEUE")
+	DB_QUEUE = getEnv("DB_QUEUE")
+	BMP_EXCHANGE = getEnv("BMP_EXCHANGE")
+	DLQ_EXCHANGE = getEnv("DLQ_EXCHANGE")
+	DLQ_QUEUE = getEnv("DLQ_QUEUE")
+	BASE_URL = getEnv("BASE_URL")
+	AUTH_URL = getEnv("AUTH_URL")
+	RABBITMQ_URL = getEnv("RABBITMQ_URL")
+	REDIS_URL = getEnv("REDIS_URL")
+	REDIS_DBCH = getEnv("REDIS_DBCH")
+	API_KEY = getEnv("API_KEY")
+	WEBHOOK_KEY = getEnv("WEBHOOK_KEY")
+	WEBHOOK_HASH = getEnv("WEBHOOK_HASH")
+	WEBHOOK_QUEUE = getEnv("WEBHOOK_QUEUE")
+	WEBHOOK_LIBERACAO_URL = getEnv("WEBHOOK_LIBERACAO_URL")
+	COBRANCA_QUEUE = getEnv("COBRANCA_QUEUE")
 
-	IPS = strings.Split(os.Getenv("IPS"), ",")
+	IPS = strings.Split(getEnv("IPS"), ",")
 
-	delay, err := strconv.ParseInt(os.Getenv("TIMEOUT_DELAY"), 10, 64)
+	delay, err := strconv.ParseInt(getEnv("TIMEOUT_DELAY"), 10, 64)
 	if err != nil {
 		return err
 	}
 	TIMEOUT_DELAY = time.Duration(delay) * time.Second
 
-	delay, err = strconv.ParseInt(os.Getenv("INITIAL_DELAY"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("INITIAL_DELAY"), 10, 64)
 	if err != nil {
 		return err
 	}
 
 	INITIAL_DELAY = time.Duration(delay) * time.Second
 
-	delay, err = strconv.ParseInt(os.Getenv("RATE_LIMIT_DELAY"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("RATE_LIMIT_DELAY"), 10, 64)
 	if err != nil {
 		return err
 	}
 
 	RATE_LIMIT_DELAY = time.Duration(delay) * time.Second
 
-	delay, err = strconv.ParseInt(os.Getenv("DB_QUEUE_DELAY"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("DB_QUEUE_DELAY"), 10, 64)
 	if err != nil {
 		return err
 	}
 	DB_QUEUE_DELAY = time.Duration(delay) * time.Second
 
-	delay, err = strconv.ParseInt(os.Getenv("REDIS_TOKEN_EXP"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("REDIS_TOKEN_EXP"), 10, 64)
 	if err != nil {
 		return err
 	}
 	REDIS_TOKEN_EXP = time.Duration(delay) * time.Minute
 
-	TIMEOUT_MAX_RETRIES, err = strconv.ParseInt(os.Getenv("TIMEOUT_MAX_RETRIES"), 10, 64)
+	TIMEOUT_MAX_RETRIES, err = strconv.ParseInt(getEnv("TIMEOUT_MAX_RETRIES"), 10, 64)
 	if err != nil {
 		return err
 	}
 
-	RATE_LIMIT_MAX_RETRIES, err = strconv.ParseInt(os.Getenv("RATE_LIMIT_MAX_RETRIES"), 10, 64)
+	RATE_LIMIT_MAX_RETRIES, err = strconv.ParseInt(getEnv("RATE_LIMIT_MAX_RETRIES"), 10, 64)
 	if err != nil {
 		return err
 	}
 
-	DB_UPDATE_MAX_RETRIES, err = strconv.ParseInt(os.Getenv("DB_UPDATE_MAX_RETRIES"), 10, 64)
+	DB_UPDATE_MAX_RETRIES, err = strconv.ParseInt(getEnv("DB_UPDATE_MAX_RETRIES"), 10, 64)
 	if err != nil {
 		return err
 	}
 
-	port, err := strconv.ParseInt(os.Getenv("DB_PORT"), 10, 64)
+	port, err := strconv.ParseInt(getEnv("DB_PORT"), 10, 64)
 	if err != nil {
 		return err
 	}
 	DB_PORT = int(port)
 
-	WEBHOOK_RETRIES, err = strconv.ParseInt(os.Getenv("WEBHOOK_RETRIES"), 10, 64)
+	WEBHOOK_RETRIES, err = strconv.ParseInt(getEnv("WEBHOOK_RETRIES"), 10, 64)
 	if err != nil {
 		return err
 	}
@@ -227,70 +226,70 @@ func InitializeEnvVar() error {
 		setLocalHomologVars()
 	}
 
-	delay, err = strconv.ParseInt(os.Getenv("WEBHOOK_DELAY"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("WEBHOOK_DELAY"), 10, 64)
 	if err != nil {
 		return err
 	}
 	WEBHOOK_DELAY = time.Duration(delay) * time.Second
 
-	WEBHOOK_DIGITACAO_URL = os.Getenv("WEBHOOK_URL")
+	WEBHOOK_DIGITACAO_URL = getEnv("WEBHOOK_URL")
 
 	DB_URL = fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable", os.Getenv("DB_HOST"),
-		DB_PORT, os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB"))
+		"password=%s dbname=%s sslmode=disable", getEnv("DB_HOST"),
+		DB_PORT, getEnv("DB_USER"), getEnv("DB_PASSWORD"), getEnv("DB"))
 
-	DB_MAX_OPEN_CONNS, err = strconv.Atoi(os.Getenv("DB_MAX_OPEN_CONNS"))
+	DB_MAX_OPEN_CONNS, err = strconv.Atoi(getEnv("DB_MAX_OPEN_CONNS"))
 	if err != nil {
 		return err
 	}
-	DB_MAX_IDLE_CONNS, err = strconv.Atoi(os.Getenv("DB_MAX_IDLE_CONNS"))
+	DB_MAX_IDLE_CONNS, err = strconv.Atoi(getEnv("DB_MAX_IDLE_CONNS"))
 	if err != nil {
 		return err
 	}
 
-	delay, err = strconv.ParseInt(os.Getenv("DB_CONN_MAX_LIFETIME"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("DB_CONN_MAX_LIFETIME"), 10, 64)
 	if err != nil {
 		return err
 	}
 	DB_CONN_MAX_LIFETIME = time.Duration(delay) * time.Second
 
-	delay, err = strconv.ParseInt(os.Getenv("DB_CONN_MAX_IDLE_TIME"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("DB_CONN_MAX_IDLE_TIME"), 10, 64)
 	if err != nil {
 		return err
 	}
 	DB_CONN_MAX_IDLE_TIME = time.Duration(delay) * time.Second
 
-	delay, err = strconv.ParseInt(os.Getenv("DB_QUERY_TIMEOUT"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("DB_QUERY_TIMEOUT"), 10, 64)
 	if err != nil {
 		return err
 	}
 	DB_QUERY_TIMEOUT = time.Duration(delay) * time.Second
 
-	delay, err = strconv.ParseInt(os.Getenv("DB_POOL_MONITORING_INTERVAL"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("DB_POOL_MONITORING_INTERVAL"), 10, 64)
 	if err != nil {
 		return err
 	}
 	DB_POOL_MONITORING_INTERVAL = time.Duration(delay) * time.Second
 
-	DB_POOL_MONITORING_MAX_ALERTS, err = strconv.Atoi(os.Getenv("DB_POOL_MONITORING_MAX_ALERTS"))
+	DB_POOL_MONITORING_MAX_ALERTS, err = strconv.Atoi(getEnv("DB_POOL_MONITORING_MAX_ALERTS"))
 	if err != nil {
 		return err
 	}
 
-	delay, err = strconv.ParseInt(os.Getenv("DB_POOL_MONITORING_ALERT_INTERVAL"), 10, 64)
+	delay, err = strconv.ParseInt(getEnv("DB_POOL_MONITORING_ALERT_INTERVAL"), 10, 64)
 	if err != nil {
 		return err
 	}
 	DB_POOL_MONITORING_ALERT_INTERVAL = time.Duration(delay) * time.Second
 
-	digitacaoQos, err := strconv.ParseInt(os.Getenv("RABBITMQ_DIGITACAO_QOS"), 10, 64)
+	digitacaoQos, err := strconv.ParseInt(getEnv("RABBITMQ_DIGITACAO_QOS"), 10, 64)
 	if err != nil {
 		return err
 	}
 
 	RABBITMQ_QOS = int(digitacaoQos)
 
-	simulacaooQos, err := strconv.ParseInt(os.Getenv("RABBITMQ_DIGITACAO_QOS"), 10, 64)
+	simulacaooQos, err := strconv.ParseInt(getEnv("RABBITMQ_DIGITACAO_QOS"), 10, 64)
 	if err != nil {
 		return err
 	}
@@ -385,8 +384,8 @@ func setLocalHomologVars() {
 	DB_PORT = 5433
 
 	DB_URL = fmt.Sprintf("host=%s port=%d user=%s "+
-		"password=%s dbname=%s sslmode=disable", os.Getenv("DB_HOST"),
-		DB_PORT, os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB"))
+		"password=%s dbname=%s sslmode=disable", getEnv("DB_HOST"),
+		DB_PORT, getEnv("DB_USER"), getEnv("DB_PASSWORD"), getEnv("DB"))
 
 	RABBITMQ_URL = "amqp://guest:guest@rabbitmq:5672/default"
 
