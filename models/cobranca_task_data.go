@@ -99,8 +99,14 @@ func (c *CobrancaTaskData) FormatLancamento() LancamentoParcelaAPIInput {
 
 	switch c.LancamentoParcela.Operacao {
 	case "S":
+
 		bmpPayload.DTOLancamentoParcela.VlrPagamento = 0.01
-		bmpPayload.DTOLancamentoParcela.VlrDesconto = helpers.Round(-1*(c.LancamentoParcela.ValorDesconto+0.01), 2)
+		if c.LancamentoParcela.ValorDesconto > 0 {
+			bmpPayload.DTOLancamentoParcela.VlrDesconto = helpers.Round(-1*(c.LancamentoParcela.ValorDesconto+0.01), 2)
+		} else {
+			bmpPayload.DTOLancamentoParcela.VlrDesconto = helpers.Round(c.LancamentoParcela.ValorDesconto-0.01, 2)
+		}
+
 		bmpPayload.DTOLancamentoParcela.DescricaoLancamento = "S"
 
 	case "P":
