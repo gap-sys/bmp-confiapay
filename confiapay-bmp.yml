@@ -19,7 +19,7 @@ services:
           memory: 1024M
       labels:  
         - traefik.enable=true
-        - traefik.http.routers.bmpconfiapay_microservices.rule=Host(`bmp.confiapay.com.br`)
+        - traefik.http.routers.bmpconfiapay_microservices.rule=Host(`bmp.Confiapay.com.br`)
         - traefik.http.routers.bmpconfiapay_microservices.entrypoints=websecure
         - traefik.http.routers.bmpconfiapay_microservices.tls.certresolver=letsencryptresolver
         - traefik.http.services.bmpconfiapay_microservices.loadbalancer.server.port=8080
