@@ -379,7 +379,7 @@ func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData, c
 	whData["operacao"] = "R"
 
 	switch payload.CobrancaDBInfo.IdFormaCobranca {
-	case config.TIPO_COBRANCA_BOLETOPIX:
+	case config.TIPO_COBRANCA_BOLETO, config.TIPO_COBRANCA_BOLETOPIX:
 		if len(data.Parcelas[0].Boletos) < 1 {
 			return models.ConsultaCobrancaResponse{}, "", 404, models.NewAPIError("", "Boleto não encontrado", strconv.Itoa(payload.IdPropostaParcela))
 		} else if data.Parcelas[0].Boletos[0].UrlImpressao == "" {
