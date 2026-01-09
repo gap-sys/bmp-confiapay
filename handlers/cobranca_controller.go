@@ -60,6 +60,8 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(models.NewAPIError(config.ERR_PARSE_STR, helpers.ParseJsonError(err.Error()), ""))
 		}
 
+		input.TipoCobranca = config.TIPO_COBRANCA_BOLETO
+
 		if err := input.Validate(); err != nil {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
 		}
@@ -75,20 +77,16 @@ func (a *CobrancaCreditoPessoalController) GerarCobranca() fiber.Handler {
 		payload.TipoCobranca = input.TipoCobranca
 		payload.GerarCobrancaInput = input
 		payload.IdPropostaParcela = input.IdPropostaParcela
+		payload.CalledAssync = true
 
 		if err := payload.Validate(); err != nil {
 			return c.Status(422).JSON(err)
 		}
 
-		//var resp = models.NewAPIError("", "A geração de cobranças entrou em processamento. Aguarde!", input.Dto.CodigoOperacao)
-		//resp.HasError = false
-
-		data, _, statusCode, err := a.cobrancaService.Cobranca(payload)
-		if err != nil {
-			return c.Status(statusCode).JSON(err)
-		}
-
-		return c.Status(statusCode).JSON(data)
+		go a.cobrancaService.Cobranca(payload)
+		var resp = models.NewAPIError("", "A geração de cobranças entrou em processamento. Aguarde!", strconv.Itoa(input.IdPropostaParcela))
+		resp.HasError = false
+		return c.JSON(resp)
 	}
 }
 

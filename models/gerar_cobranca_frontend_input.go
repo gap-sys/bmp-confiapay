@@ -14,7 +14,7 @@ type GerarCobrancaFrontendInput struct {
 	NumeroParcela        int     `json:"parcela" validate:"required"`
 	IdPropostaParcela    int     `json:"id_proposta_parcela" validate:"required"`
 	ValorParcela         float64 `json:"valor_parcela"`
-	TipoCobranca         int     `json:"id_forma_cobranca" validate:"required,oneof=2 3 7"`
+	TipoCobranca         int     `json:"id_forma_cobranca"`
 	IdConvenio           int     `json:"id_convenio"`
 	IdSecuritizadora     int     `json:"id_securitizadora"`
 	VlrDesconto          float64 `json:"valor_desconto"`
