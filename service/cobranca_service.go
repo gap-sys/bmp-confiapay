@@ -483,11 +483,6 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 
 		switch payload.Status {
 		case config.STATUS_GERAR_COBRANCA:
-
-			if statusCode == 500 {
-				errAPI.Msg = fmt.Sprintf("%s indisponível(%s)", operation, errAPI.Messages[0].Code)
-			}
-
 			whData["has_error"] = true
 			whData["msg"] = errAPI.Msg
 			whData["id_proposta_parcela"] = payload.IdPropostaParcela
