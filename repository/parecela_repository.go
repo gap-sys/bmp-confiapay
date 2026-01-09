@@ -135,7 +135,7 @@ DO UPDATE SET
 
 	if err != nil {
 		//	var logData = map[string]any{s}
-		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela simulacao_status", err.Error(), data)
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela bmp_cobrancas", err.Error(), data)
 		return isConnError(s.db, err), err
 	}
 
@@ -373,7 +373,7 @@ func (s *ParcelaRepo) UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidaca
 
 	if err != nil {
 		var logData = map[string]any{"id_proposta_parcela": IdPropostaParcela, "codigo_liquidacao": codigoLiquidacao}
-		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela simulacao_status", err.Error(), logData)
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela bmp_cobrancas", err.Error(), logData)
 		return isConnError(s.db, err), err
 	}
 
