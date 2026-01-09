@@ -22,5 +22,6 @@ type CobrancaService interface {
 	FindByNumParcela(numParcela int, numeroCCB int) (models.CobrancaBMP, error)
 	FindByDataVencimento(dataExpiracao string, numeroCCB int) (models.CobrancaBMP, error)
 	UpdateCodLiquidacao(idPropostaParcela int, codigoLiquidacao string) (bool, error)
+	FindByIdPropostaParcela(idPropostaParcela int) (models.CobrancaBMP, error)
 	SendToDLQ(data any) error
 }

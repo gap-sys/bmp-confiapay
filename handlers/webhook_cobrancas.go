@@ -136,7 +136,6 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					if lancamento.LancamentoParcela.VlrDesconto >= 0 {
 
 						whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
-						whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
 						whData["data_pagamento"] = lancamento.DtEvento
 						whData["valor_pago"] = lancamento.LancamentoParcela.VlrPagamento
 						whData["valor_encargo"] = lancamento.LancamentoParcela.VlrEncargos
@@ -144,7 +143,6 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 						whData["operacao"] = "P"
 					} else {
 						whData["id_proposta_parcela"] = cobrancaInfo.IdPropostaParcela
-						whData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
 						whData["saldo"] = lancamento.LancamentoParcela.VlrSaldo
 						whData["operacao"] = "S"
 

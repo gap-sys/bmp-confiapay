@@ -24,6 +24,7 @@ type CobrancalService struct {
 	parcelaRepository ParcelaRepository
 	webhookService    *WebhookService
 	updateService     *UpdateService
+	operations        map[string]string
 }
 
 // Configurando o producer das filas
@@ -53,6 +54,12 @@ func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Loca
 		cache:             cache,
 		updateService:     updateService,
 		parcelaRepository: parcelaRepository,
+		operations: map[string]string{
+			config.STATUS_GERAR_COBRANCA:     "Geração de cobrança",
+			config.STATUS_CANCELAR_COBRANCA:  "Cancelamento de cobrança",
+			config.STATUS_LANCAMENTO_PARCELA: "Lançamento na parcela",
+			config.STATUS_CONSULTAR_COBRANCA: "Consulta de cobrança",
+		},
 	}
 }
 
@@ -175,10 +182,6 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 		CodigoLiquidacao:  data.Cobrancas[0].CodigoLiquidacao,
 		Action:            "update_codigo_liquidacao",
 	}, false)
-
-	//if payload.CalledAssync {
-	//c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, data, "cobranca service"))
-	//}
 
 	var cobrancaGeradaInfo = map[string]any{
 		"id_proposta":         payload.GerarCobrancaInput.IdProposta,
@@ -431,9 +434,12 @@ func (c *CobrancalService) FindByDataVencimento(dataExpiracao string, numeroCCB 
 
 // Realiza o tratamento de erros nas cobranças.
 func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, payload *models.CobrancaTaskData, errAPI models.APIError) (any, string, int, error) {
+	operation := c.operations[payload.Status]
+	logMsg := fmt.Sprintf("Erro ao realizar %s", operation)
+	helpers.LogError(c.ctx, c.logger, c.loc, "cobranca service", strconv.Itoa(statusCode), logMsg, errAPI, errAPI)
 
 	if errAPI.ID <= 0 {
-		errAPI.ID = payload.IdProposta
+		errAPI.ID = payload.IdPropostaParcela
 	}
 
 	if len(errAPI.Messages) < 1 {
@@ -442,6 +448,15 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 				Description: errAPI.Error(),
 			},
 		}
+	}
+
+	if errAPI.Messages[0].Code != "" {
+		errAPI.Msg = fmt.Sprintf("%s(%s)", errAPI.Messages[0].Description, errAPI.Messages[0].Code)
+	}
+
+	if statusCode == 500 || status == config.API_STATUS_TIMEOUT || status == config.API_STATUS_RATE_LIMIT {
+		errAPI.Msg = fmt.Sprintf("%s indisponível(%s)", operation, errAPI.Messages[0].Code)
+
 	}
 
 	if (status == config.API_STATUS_TIMEOUT && payload.TimeoutRetries > 1) || (status == config.API_STATUS_RATE_LIMIT && payload.RateLimitRetries > 1) {
@@ -457,14 +472,7 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 			return nil, config.API_STATUS_ERR, 500, models.NewAPIError("", "Erro ao enviar dados para fila: "+err.Error(), strconv.Itoa(payload.IdProposta))
 		}
 
-		var op = map[string]string{
-			config.STATUS_GERAR_COBRANCA:     "A geração de boleto/pix",
-			config.STATUS_LANCAMENTO_PARCELA: "O lançamento na parcela",
-			config.STATUS_CANCELAR_COBRANCA:  "O cancelamento da cobrança",
-			config.STATUS_CONSULTAR_COBRANCA: "A consulta",
-		}
-
-		var resp = models.NewAPIError("", fmt.Sprintf("%s entrou na fila de processamento. Aguarde!", op[payload.Status]), strconv.Itoa(payload.IdProposta))
+		var resp = models.NewAPIError("", fmt.Sprintf("%s entrou em fila de processamento. Aguarde!", c.operations[payload.Status]), strconv.Itoa(payload.IdProposta))
 		resp.HasError = false
 		return resp, "", 200, nil
 
@@ -474,25 +482,26 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 		var whData = make(map[string]any)
 
 		switch payload.Status {
-		case config.STATUS_GERAR_COBRANCA, config.STATUS_CANCELAR_COBRANCA:
-			var op = map[string]string{config.STATUS_GERAR_COBRANCA: "R", config.STATUS_CANCELAR_COBRANCA: "C"}
+		case config.STATUS_GERAR_COBRANCA:
+
+			if statusCode == 500 {
+				errAPI.Msg = fmt.Sprintf("%s indisponível(%s)", operation, errAPI.Messages[0].Code)
+			}
 
 			whData["has_error"] = true
 			whData["msg"] = errAPI.Msg
 			whData["id_proposta_parcela"] = payload.IdPropostaParcela
-			whData["operacao"] = op[payload.Status]
+			whData["operacao"] = "R"
 
 			c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "cobranca service"))
 
-		case config.STATUS_CONSULTAR_COBRANCA:
-			var dlqData = models.DLQData{
-				Payload:  payload.ConsultarCobrancaInput,
-				Mensagem: "Erro ao buscar cobranças geradas",
-				Erro:     "Erro ao buscar cobranças geradas",
-				Contexto: "webhook cobranças",
-				Time:     time.Now().In(c.loc),
-			}
-			c.SendToDLQ(dlqData)
+		case config.STATUS_CANCELAR_COBRANCA:
+			whData["has_error"] = true
+			whData["msg"] = errAPI.Msg
+			whData["id_proposta_parcela"] = payload.IdPropostaParcela
+			whData["operacao"] = "C"
+
+			c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "cobranca service"))
 
 		case config.STATUS_LANCAMENTO_PARCELA:
 			var whData = make(map[string]any)
@@ -502,10 +511,27 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 			whData["operacao"] = payload.LancamentoParcela.Operacao
 			c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "cobranca service"))
 
+		case config.STATUS_CONSULTAR_COBRANCA:
+			var dlqData = models.DLQData{
+				Payload: map[string]any{
+					"enviado":  payload.ConsultarCobrancaInput,
+					"recebido": errAPI.Result,
+				},
+				Mensagem: "Erro ao buscar cobranças geradas",
+				Erro:     "Erro ao buscar cobranças geradas",
+				Contexto: "webhook cobranças",
+				Time:     time.Now().In(c.loc),
+			}
+			c.SendToDLQ(dlqData)
+
 		}
 
 	}
 
 	return nil, status, statusCode, errAPI
 
+}
+
+func (c *CobrancalService) FindByIdPropostaParcela(idPropostaParcela int) (models.CobrancaBMP, error) {
+	return c.parcelaRepository.FindByIdPropostaParcela(idPropostaParcela)
 }

@@ -114,6 +114,20 @@ func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(err)
 		}
 
+		propostaInfo, err := a.cobrancaService.FindByIdPropostaParcela(input.IdPropostaParcela)
+
+		if err != nil {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(models.NewAPIError("", "Impossível cancelar:Não existe cobrança.", strconv.Itoa(input.IdPropostaParcela)))
+		}
+
+		if propostaInfo.CodigoLiquidacao == "" {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(models.NewAPIError("", "Impossível cancelar:Não existe mais cobrança.", strconv.Itoa(input.IdPropostaParcela)))
+
+		} else if propostaInfo.CodigoLiquidacao != input.CodigoLiquidacao {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(models.NewAPIError("", "Impossível cancelar:código da liquidação divergente.", strconv.Itoa(input.IdPropostaParcela)))
+
+		}
+
 		var bmpPayload = models.CancelarCobrancaInput{
 			DTO: models.DtoCobranca{
 				CodigoProposta: input.NumeroAcompanhamento,

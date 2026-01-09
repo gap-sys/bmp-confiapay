@@ -12,4 +12,5 @@ type ParcelaRepository interface {
 	FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int) (models.CobrancaBMP, error)
 	FindByNumParcela(numParcela int, numeroCCB int) (models.CobrancaBMP, error)
 	FindByDataVencimento(dataExpiracao string, numeroCCB int) (models.CobrancaBMP, error)
+	FindByIdPropostaParcela(idPropostaParcela int) (models.CobrancaBMP, error)
 }

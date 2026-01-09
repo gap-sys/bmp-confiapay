@@ -6,6 +6,7 @@ import (
 	"cobranca-bmp/models"
 	"context"
 	"database/sql"
+	"errors"
 	"log/slog"
 	"strconv"
 	"time"
@@ -463,6 +464,54 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int, numeroCCB int) (models.Co
 	if err != nil {
 		var logData = map[string]any{"parcela": numParcela, "numero_ccb": numeroCCB}
 		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por número de parcela", err.Error(), logData)
+		return models.CobrancaBMP{}, err
+	}
+
+	cobranca.CodigoLiquidacao = codLiquidacao.String
+
+	return cobranca, nil
+
+}
+
+func (s *ParcelaRepo) FindByIdPropostaParcela(idPropostaParcela int) (models.CobrancaBMP, error) {
+	var cobranca models.CobrancaBMP
+	var codLiquidacao sql.NullString
+	cobranca.IdPropostaParcela = idPropostaParcela
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
+	defer cancel()
+
+	err := s.db.QueryRowContext(ctx, `
+			SELECT
+			    id_proposta,
+				numero_acompanhamento,
+		        id_securitizadora,
+				id_convenio, 
+		        numero_ccb,
+		        url_webhook,
+		      codigo_liquidacao,
+		        id_forma_cobranca
+			
+			FROM 
+			    bmp_cobrancas
+
+			WHERE
+				id_proposta_parcela=$1`,
+		idPropostaParcela,
+	).Scan(&cobranca.IdProposta,
+		&cobranca.NumeroAcompanhamento,
+		&cobranca.IdSecuritizadora,
+		&cobranca.IdConvenio,
+		&cobranca.NumeroCCB,
+		&cobranca.UrlWebhook,
+		&codLiquidacao,
+		&cobranca.IdFormaCobranca)
+	if err != nil {
+		var logData = map[string]any{"id_proposta_parcela": idPropostaParcela}
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por id_proposta_parcela", err.Error(), logData)
+		if errors.Is(err, sql.ErrNoRows) {
+			return models.CobrancaBMP{}, errors.New("dados nao encontrados")
+		}
 		return models.CobrancaBMP{}, err
 	}
 
