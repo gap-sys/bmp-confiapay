@@ -131,10 +131,14 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 	var statusCode int
 	var data models.GerarCobrancaResponse
 
-	c.updateService.UpdateGeracaoParcela(models.UpdateDbData{
+	_, err := c.updateService.UpdateGeracaoParcela(models.UpdateDbData{
 		GeracaoParcela: &payload.GerarCobrancaInput,
 		Action:         "update_geracao",
-	}, false)
+	}, true)
+
+	if err != nil {
+		return c.HandleErrorCobranca(config.API_STATUS_ERR, 500, payload, models.NewAPIError("", "Não foi possível gravar cobrancas na base de dados: "+err.Error(), strconv.Itoa(payload.GerarCobrancaInput.IdProposta)))
+	}
 
 	payload.CobrancaDBInfo.IdFormaCobranca = payload.GerarCobrancaInput.TipoCobranca
 
