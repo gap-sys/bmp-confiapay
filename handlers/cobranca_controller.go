@@ -136,15 +136,12 @@ func (a *CobrancaCreditoPessoalController) CancelarCobranca() fiber.Handler {
 		cancelamentoTaskData.CancelamentoData = input
 		cancelamentoTaskData.IdPropostaParcela = input.IdPropostaParcela
 		cancelamentoTaskData.WebhookUrl = input.UrlWebhook
+		cancelamentoTaskData.CalledAssync = true
 
-		data, _, statusCode, err := a.cobrancaService.Cobranca(cancelamentoTaskData)
-
-		//var resp = models.NewAPIError("", "O cancelamento de cobranças entrou em processamento. Aguarde!", strconv.Itoa(input.IdProposta))
-		if err != nil {
-			return c.Status(statusCode).JSON(err)
-		}
-		//resp.HasError = false
-		return c.Status(fiber.StatusOK).JSON(data)
+		var resp = models.NewAPIError("", "O cancelamento de cobranças entrou em processamento. Aguarde!", strconv.Itoa(input.IdProposta))
+		resp.HasError = false
+		go a.cobrancaService.Cobranca(cancelamentoTaskData)
+		return c.Status(fiber.StatusOK).JSON(resp)
 	}
 }
 
@@ -182,15 +179,12 @@ func (a *CobrancaCreditoPessoalController) LancamentoParcela() fiber.Handler {
 		lancamentoTaskData.IdPropostaParcela = input.IdPropostaParcela
 		lancamentoTaskData.LancamentoParcela = input
 		lancamentoTaskData.WebhookUrl = input.UrlWebhook
+		lancamentoTaskData.CalledAssync = true
 
-		data, _, statusCode, err := a.cobrancaService.Cobranca(lancamentoTaskData)
-
-		//var resp = models.NewAPIError("", "O cancelamento de cobranças entrou em processamento. Aguarde!", strconv.Itoa(input.IdProposta))
-		if err != nil {
-			return c.Status(statusCode).JSON(err)
-		}
-		//resp.HasError = false
-		return c.Status(fiber.StatusOK).JSON(data)
+		go a.cobrancaService.Cobranca(lancamentoTaskData)
+		var resp = models.NewAPIError("", "O lançamento na parcela entrou em processamento. Aguarde!", strconv.Itoa(input.IdProposta))
+		resp.HasError = false
+		return c.JSON(resp)
 	}
 }
 

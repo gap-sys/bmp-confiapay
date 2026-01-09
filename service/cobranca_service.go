@@ -176,9 +176,9 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 		Action:            "update_codigo_liquidacao",
 	}, false)
 
-	if payload.CalledAssync {
-		c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, data, "cobranca service"))
-	}
+	//if payload.CalledAssync {
+	//c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, data, "cobranca service"))
+	//}
 
 	var cobrancaGeradaInfo = map[string]any{
 		"id_proposta":         payload.GerarCobrancaInput.IdProposta,
