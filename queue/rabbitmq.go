@@ -46,21 +46,6 @@ type RabbitMQ struct {
 }
 
 // NewRMQ cria uma nova instância de RabbitMQ.
-// ctx é o contexto de cancelamento.
-// loc é o fuso horário a ser utilizado.
-// cache é o cache a ser utilizado.
-// logger é o logger a ser utilizado.
-// simulacaoFGTSService é o serviço de simulação FGTS.
-// digitacaoFGTSService é o serviço de digitação FGTS.
-// cobrancaFGTSService é o serviço de cobrança FGTS.
-// simulacaoINSSCPService é o serviço de simulação INSSCP.
-// digitacaoINSSCPService é o serviço de digitação INSSCP.
-// dbService é o serviço de banco de dados.
-// webhookService é o serviço de webhook.
-// cobrancaINSSCPService é o serviço de cobrança INSSCP.
-// digitacaoQOS é o QOS de digitação.
-// simulacaoQOS é o QOS de simulação.
-// globalQOS é se o QOS é global.
 func NewRMQ(ctx context.Context, loc *time.Location, cache RedisPublisher,
 	logger *slog.Logger,
 	webhookService WebhookService,
