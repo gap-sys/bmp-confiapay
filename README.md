@@ -6,7 +6,7 @@ Microserviço que acessa as funcionalidades da API de Cobranças do Banco BMP.
 
 ## Descrição
 
-Microserviço de acesso aos serviços de geração,caonsulta e cancelamento de cobranças na API do BMP.
+Microserviço de acesso aos serviços de geração,consulta e cancelamento de cobranças na API do BMP.
  
 
 
