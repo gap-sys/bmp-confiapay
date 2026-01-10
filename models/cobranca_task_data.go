@@ -18,7 +18,9 @@ type CobrancaTaskData struct {
 	MultiplasCobrancas     bool                           `json:"multiplasCobrancas"`
 	TipoCobranca           int                            `json:"tipoCobranca"`
 	NumeroCCB              int                            `json:"numeroCCB"`
+	NumeroBoleto           int                            `json:"numeroBoleto"`
 	RateLimitRetries       int64                          `json:"rateLimitRetries"`
+	ConsultaRetries        int                            `json:"consultaRetries"`
 	TimeoutDelay           time.Duration                  `json:"timeoutDelay"`
 	CurrentDelay           time.Duration                  `json:"currentDelay"`
 	Token                  string                         `json:"token,omitempty"`
@@ -32,6 +34,7 @@ type CobrancaTaskData struct {
 	CancelamentoCobranca   CancelarCobrancaInput          `json:"cancelamentoCobranca"`
 	ConsultarCobrancaInput ConsultarDetalhesInput         `json:"consultarCobrancaInput"`
 	CalledAssync           bool                           `json:"calledAssync"`
+	ModoConsulta           string                         `json:"modoConsulta"`
 	WhData                 map[string]any
 	CobrancaDBInfo         CobrancaBMP `json:"cobrancaDBInfo"`
 }
@@ -48,6 +51,8 @@ func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, num
 		AuthPayload:          authPayload,
 		Status:               status,
 		WhData:               nil,
+		ModoConsulta:         config.CONSULTA_DETALHADA,
+		ConsultaRetries:      0,
 	}
 	c.GenIdempotencyKey(idempotencyKey)
 
@@ -56,6 +61,7 @@ func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, num
 
 // Seta as tentativas
 func (a *CobrancaTaskData) SetTry(interval time.Duration, status string) {
+
 	switch status {
 	case config.API_STATUS_RATE_LIMIT:
 		a.RateLimitRetries--
@@ -64,7 +70,25 @@ func (a *CobrancaTaskData) SetTry(interval time.Duration, status string) {
 		a.TimeoutDelay += interval
 		a.CurrentDelay = a.TimeoutDelay
 		a.TimeoutRetries--
+
+	default:
+		a.CurrentDelay += interval
+
 	}
+
+	if a.Status == config.STATUS_CONSULTAR_COBRANCA {
+		a.ConsultaRetries++
+		return
+	}
+}
+
+func (a *CobrancaTaskData) SwitchCobrancaMode() error {
+	if a.ModoConsulta == config.CONSULTA_BOLETO {
+		a.ModoConsulta = config.CONSULTA_DETALHADA
+	} else if a.ModoConsulta == config.CONSULTA_DETALHADA && a.NumeroBoleto > 0 {
+		a.ModoConsulta = config.CONSULTA_BOLETO
+	}
+	return nil
 }
 
 // Reseta todas as tentativas e o delay.

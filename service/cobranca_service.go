@@ -91,17 +91,31 @@ func (c *CobrancalService) Cobranca(payload *models.CobrancaTaskData) (any, stri
 		return data, status, statusCode, err
 
 	case config.STATUS_CONSULTAR_COBRANCA:
-		data, status, statusCode, err := c.ConsultarCobranca(payload, true)
+		switch payload.ModoConsulta {
+		case config.CONSULTA_DETALHADA:
+			data, status, statusCode, err := c.ConsultarCobranca(payload, true)
 
-		if err != nil {
-			if payload.CalledAssync {
-				err, _ := err.(models.APIError)
-				return c.HandleErrorCobranca(status, statusCode, payload, err)
+			if err != nil {
+				if payload.CalledAssync {
+					err, _ := err.(models.APIError)
+					return c.HandleErrorCobranca(status, statusCode, payload, err)
+				}
+
 			}
+			return data, status, statusCode, err
 
+		case config.CONSULTA_BOLETO:
+			data, status, statusCode, err := c.ConsultarBoleto(payload, true)
+
+			if err != nil {
+				if payload.CalledAssync {
+					err, _ := err.(models.APIError)
+					return c.HandleErrorCobranca(status, statusCode, payload, err)
+				}
+
+			}
+			return data, status, statusCode, err
 		}
-
-		return data, status, statusCode, err
 
 	case config.STATUS_GERAR_COBRANCA:
 		return c.GerarCobranca(payload)
@@ -122,6 +136,7 @@ func (c *CobrancalService) Cobranca(payload *models.CobrancaTaskData) (any, stri
 		return nil, "", 500, models.NewAPIError("", "Status inválido", payload.AuthPayload.Id)
 
 	}
+	return nil, "", 200, nil
 
 }
 
@@ -142,7 +157,7 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 
 	payload.CobrancaDBInfo.IdFormaCobranca = payload.GerarCobrancaInput.TipoCobranca
 
-	cobrancaInfo, _ := c.parcelaRepository.FindByNumParcela(payload.GerarCobrancaInput.NumeroParcela, payload.GerarCobrancaInput.NumeroCCB)
+	cobrancaInfo, _ := c.parcelaRepository.FindByIdPropostaParcela(payload.GerarCobrancaInput.IdPropostaParcela)
 	if cobrancaInfo.CodigoLiquidacao != "" {
 		payload.ConsultarCobrancaInput = models.ConsultarDetalhesInput{
 			DTO: models.DtoCobranca{
@@ -154,17 +169,15 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 				TrazerBoleto: true,
 			},
 		}
-		_, _, _, err := c.ConsultarCobranca(payload, false)
+		payload.Status = config.STATUS_CONSULTAR_COBRANCA
+		payload.NumeroBoleto = cobrancaInfo.NumeroBoleto
+		payload.CobrancaDBInfo.CodigoLiquidacao = cobrancaInfo.CodigoLiquidacao
+		payload.CobrancaDBInfo.IdPropostaParcela = payload.GerarCobrancaInput.IdPropostaParcela
+		payload.IdPropostaParcela = payload.GerarCobrancaInput.IdPropostaParcela
+		payload.SwitchCobrancaMode()
 
-		if err == nil && payload.WhData != nil && payload.WebhookUrl != "" {
-			payload.WhData["codigo_liquidacao"] = cobrancaInfo.CodigoLiquidacao
-			payload.WhData["id_proposta_parcela"] = payload.IdPropostaParcela
-			go c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, payload.WhData, "cobranca service"))
-			return map[string]string{"msg": "cobrança já foi gerada"}, "", 200, nil
+		return c.Cobranca(payload)
 
-		}
-
-		payload.GenIdempotencyKey(c.cache.GenID())
 	}
 
 	if payload.MultiplasCobrancas {
@@ -359,7 +372,6 @@ func (c *CobrancalService) LancamentoParcela(payload *models.CobrancaTaskData) (
 }
 
 func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData, callBack bool) (models.ConsultaCobrancaResponse, string, int, error) {
-
 	data, statusCode, status, err := c.client.ConsultarCobranca(payload.ConsultarCobrancaInput, payload.Token, payload.IdempotencyKey)
 
 	if status == config.API_STATUS_UNAUTHORIZED {
@@ -416,6 +428,52 @@ func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData, c
 	return data, status, statusCode, nil
 }
 
+func (c *CobrancalService) ConsultarBoleto(payload *models.CobrancaTaskData, callBack bool) (models.BoletoConsultado, string, int, error) {
+	var consultaInput = models.ConsultaBoletoInput{
+		DTO: models.ConsultaBoletoDTO{
+			CodigoProposta: payload.NumeroAcompanhamento,
+			CodigoOperacao: strconv.Itoa(payload.IdProposta),
+		},
+		DTOConsultaBoletos: models.ConsultaBoletosFiltroDTO{
+			NumerosBoletos: []int{payload.NumeroBoleto},
+		},
+	}
+
+	data, statusCode, status, err := c.client.ConsultarBoleto(consultaInput, payload.Token, payload.IdempotencyKey)
+
+	if status == config.API_STATUS_UNAUTHORIZED {
+		token, authErr := c.Auth(payload.AuthPayload)
+		if authErr != nil {
+			return data, status, statusCode, err
+		}
+
+		payload.Token = token
+		data, statusCode, status, err = c.client.ConsultarBoleto(consultaInput, payload.Token, payload.IdempotencyKey)
+	}
+
+	if err != nil {
+		return data, status, statusCode, err
+	}
+
+	if len(data.Boletos) < 1 {
+		return models.BoletoConsultado{}, "", 404, models.NewAPIError("", "Boleto não encontrado", strconv.Itoa(payload.IdPropostaParcela))
+	}
+
+	var whData = make(map[string]any)
+	whData["id_proposta_parcela"] = payload.CobrancaDBInfo.IdPropostaParcela
+	whData["codigo_liquidacao"] = payload.CobrancaDBInfo.CodigoLiquidacao
+	whData["operacao"] = "R"
+	whData["boleto"] = data.Boletos[0].FormatToWebhook()
+
+	payload.WhData = whData
+
+	if payload.WebhookUrl != "" && callBack {
+		c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "consulta-boleto"))
+	}
+
+	return data, status, statusCode, nil
+}
+
 func (c *CobrancalService) FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int) (models.CobrancaBMP, error) {
 	return c.parcelaRepository.FindByCodLiquidacao(codigoLiquidacao, numeroCCB)
 }
@@ -425,6 +483,14 @@ func (c *CobrancalService) UpdateCodLiquidacao(idPropostaParcela int, codigoLiqu
 		CodigoLiquidacao:  codigoLiquidacao,
 		IdPropostaParcela: idPropostaParcela,
 		Action:            "update_codigo_liquidacao",
+	}, false)
+}
+
+func (c *CobrancalService) UpdateNumeroBoleto(idPropostaParcela, numeroBoleto int) (bool, error) {
+	return c.updateService.UpdateNumeroBoleto(models.UpdateDbData{
+		IdPropostaParcela: idPropostaParcela,
+		NumeroBoleto:      numeroBoleto,
+		Action:            "update_numero_boleto",
 	}, false)
 }
 
@@ -463,10 +529,18 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 
 	}
 
+	if payload.Status == config.STATUS_CONSULTAR_COBRANCA {
+		payload.SetTry(config.TIMEOUT_DELAY, status)
+		payload.SwitchCobrancaMode()
+		payload.GenIdempotencyKey(c.cache.GenID())
+		c.queue.Produce(config.CONSULTA_QUEUE, payload, payload.CurrentDelay)
+		return nil, status, statusCode, errAPI
+	}
+
 	if (status == config.API_STATUS_TIMEOUT && payload.TimeoutRetries > 1) || (status == config.API_STATUS_RATE_LIMIT && payload.RateLimitRetries > 1) {
 		payload.SetTry(config.TIMEOUT_DELAY, status)
 		if status == config.API_STATUS_TIMEOUT {
-			payload.IdempotencyKey = strconv.Itoa(c.cache.GenID())
+			payload.GenIdempotencyKey(c.cache.GenID())
 		}
 		payload.CalledAssync = true
 
@@ -509,19 +583,6 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 			whData["id_proposta_parcela"] = payload.IdPropostaParcela
 			whData["operacao"] = payload.LancamentoParcela.Operacao
 			c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "cobranca service"))
-
-		case config.STATUS_CONSULTAR_COBRANCA:
-			var dlqData = models.DLQData{
-				Payload: map[string]any{
-					"enviado":  payload.ConsultarCobrancaInput,
-					"recebido": errAPI.Result,
-				},
-				Mensagem: "Erro ao buscar cobranças geradas",
-				Erro:     "Erro ao buscar cobranças geradas",
-				Contexto: "webhook cobranças",
-				Time:     time.Now().In(c.loc),
-			}
-			c.SendToDLQ(dlqData)
 
 		}
 

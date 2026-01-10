@@ -80,6 +80,8 @@ var (
 	STATUS_GERAR_COBRANCA     = "gerar_cobranca"
 	STATUS_CANCELAR_COBRANCA  = "cancelar_cobranca"
 	STATUS_LANCAMENTO_PARCELA = "lancamento_parcela"
+	CONSULTA_BOLETO           = "CB"
+	CONSULTA_DETALHADA        = "CD"
 	GERAR_MULTIPLAS_COBRANCAS = true
 )
 
@@ -95,6 +97,7 @@ var (
 	DLQ_EXCHANGE           string
 
 	COBRANCA_QUEUE string
+	CONSULTA_QUEUE string
 	DLQ_QUEUE      string
 
 	INITIAL_DELAY          time.Duration
@@ -161,6 +164,7 @@ func InitializeEnvVar() error {
 	WEBHOOK_QUEUE = getEnv("WEBHOOK_QUEUE")
 	WEBHOOK_LIBERACAO_URL = getEnv("WEBHOOK_LIBERACAO_URL")
 	COBRANCA_QUEUE = getEnv("COBRANCA_QUEUE")
+	CONSULTA_QUEUE = getEnv("CONSULTA_QUEUE")
 
 	IPS = strings.Split(getEnv("IPS"), ",")
 

@@ -189,6 +189,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 
 					cobrancaPayload := models.NewCobrancaTastkData(w.cache.GenID(), config.STATUS_CONSULTAR_COBRANCA, cobrancaInfo.IdProposta, cobrancaInfo.NumeroAcompanhamento, authPAyload)
 					cobrancaPayload.CobrancaDBInfo = cobrancaInfo
+					cobrancaPayload.IdPropostaParcela = cobrancaInfo.IdPropostaParcela
 					cobrancaPayload.ConsultarCobrancaInput = models.ConsultarDetalhesInput{
 						DTO: models.DtoCobranca{
 							CodigoProposta: cobrancaInfo.NumeroAcompanhamento,
@@ -202,7 +203,10 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 
 					cobrancaPayload.WebhookUrl = cobrancaInfo.UrlWebhook
 					cobrancaPayload.CalledAssync = true
+					cobrancaPayload.NumeroBoleto = geracaoBoleto.GeracaoBoleto.NroBoleto
 
+					cobrancaPayload.SwitchCobrancaMode()
+					w.cobrancaService.UpdateNumeroBoleto(cobrancaInfo.IdPropostaParcela, geracaoBoleto.GeracaoBoleto.NroBoleto)
 					w.cobrancaService.Cobranca(cobrancaPayload)
 
 					return
@@ -283,6 +287,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 
 					cobrancaPayload := models.NewCobrancaTastkData(w.cache.GenID(), config.STATUS_CONSULTAR_COBRANCA, cobrancaInfo.IdProposta, cobrancaInfo.NumeroAcompanhamento, authPAyload)
 					cobrancaPayload.CobrancaDBInfo = cobrancaInfo
+					cobrancaPayload.IdPropostaParcela = cobrancaInfo.IdPropostaParcela
 					cobrancaPayload.ConsultarCobrancaInput = models.ConsultarDetalhesInput{
 						DTO: models.DtoCobranca{
 							CodigoProposta: cobrancaInfo.NumeroAcompanhamento,
@@ -295,6 +300,13 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 					}
 
 					cobrancaPayload.WebhookUrl = cobrancaInfo.UrlWebhook
+
+					if registroCobranca.GeracaoCobranca.NroBoleto != nil {
+						w.cobrancaService.UpdateNumeroBoleto(cobrancaInfo.IdPropostaParcela, *registroCobranca.GeracaoCobranca.NroBoleto)
+						cobrancaPayload.NumeroBoleto = *registroCobranca.GeracaoCobranca.NroBoleto
+					}
+
+					cobrancaPayload.SwitchCobrancaMode()
 					cobrancaPayload.CalledAssync = true
 
 					w.cobrancaService.Cobranca(cobrancaPayload)

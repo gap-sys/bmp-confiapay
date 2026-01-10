@@ -8,6 +8,7 @@ type CobrancaBMP struct {
 	DataVencimento       string  `json:"data_vencimento" validate:"required"`
 	DataExpiracao        string  `json:"data_expiracao" validate:"required"`
 	NumeroParcela        int     `json:"numero_parcela" validate:"required"`
+	NumeroBoleto         int     `json:"numeroBoleto"`
 	CodigoLiquidacao     string  `json:"codigoLiquidacao"`
 	IdPropostaParcela    int     `json:"id_proposta_parcela" validate:"required"`
 	ValorParcela         float64 `json:"valor_parcela"`

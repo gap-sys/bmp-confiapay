@@ -271,6 +271,61 @@ func (c *CobrancaClient) ConsultarCobranca(payload models.ConsultarDetalhesInput
 
 }
 
+func (c *CobrancaClient) ConsultarBoleto(payload models.ConsultaBoletoInput, token string, idempotencyKey string) (models.BoletoConsultado, int, string, error) {
+	url := fmt.Sprintf("%s/%s", c.baseUrl, "AgendaRecebivel/ConsultarBoletos")
+
+	req, err := c.newRequest(http.MethodPost, url, payload)
+	if err != nil {
+		return models.BoletoConsultado{}, 500, config.API_STATUS_ERR, models.NewAPIError(config.ERR_INTERNAL_SERVER_STR, err.Error(), "")
+	}
+	req.Header.Set("Authorization", token)
+	req.Header.Set("IdempotencyKey", idempotencyKey)
+
+	resp, err := c.doRequest(req)
+	if err != nil {
+		return models.BoletoConsultado{}, 500, config.API_STATUS_ERR, models.NewAPIError(config.ERR_INTERNAL_SERVER_STR, err.Error(), "")
+	}
+	defer resp.Body.Close()
+
+	rawBody, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		var APIErr models.APIError
+		json.Unmarshal(rawBody, &APIErr)
+		var status string
+		switch resp.StatusCode {
+		case http.StatusGatewayTimeout, http.StatusRequestTimeout:
+			status = config.API_STATUS_TIMEOUT
+		case http.StatusTooManyRequests:
+			status = config.API_STATUS_RATE_LIMIT
+		case http.StatusUnauthorized:
+			status = config.API_STATUS_UNAUTHORIZED
+			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.DTO.CodigoOperacao)
+
+		default:
+			status = config.API_STATUS_ERR
+
+		}
+
+		return models.BoletoConsultado{}, resp.StatusCode, status, APIErr
+	}
+
+	var data models.BoletoConsultado
+	if err := json.Unmarshal(rawBody, &data); err != nil {
+		return models.BoletoConsultado{}, 500, config.API_STATUS_ERR, models.NewAPIError(config.ERR_INTERNAL_SERVER_STR, err.Error(), "")
+	}
+
+	/*var result = make(map[string]any)
+
+	if err = json.Unmarshal(rawBody, &result); err != nil {
+		return models.BoletoConsultado{}, 500, config.API_STATUS_ERR, models.NewAPIError(config.ERR_INTERNAL_SERVER_STR, err.Error(), "")
+	}*/
+
+	//data.Result = result
+
+	return data, 200, "", nil
+
+}
+
 // Busca propostas na API do BMP por ID ou código de proposta.
 func (c *CobrancaClient) BuscarProposta(param models.BuscarProposta, token, idempotencyKey string) (models.PropostaAPIResponse, string, int, error) {
 	url := fmt.Sprintf("%s/%s", c.baseUrl, "Proposta/Consultar")

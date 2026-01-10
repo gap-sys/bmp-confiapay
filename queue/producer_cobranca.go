@@ -1,10 +1,12 @@
 package queue
 
 import (
+	"cobranca-bmp/config"
 	"cobranca-bmp/helpers"
 	"cobranca-bmp/models"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -13,16 +15,14 @@ import (
 // CobrancaProducer é a struct que contém as configurações e canais do producer CreditoPessoal.
 type CobrancaProducer struct {
 	producer
-	digitacaoCreditoPessoalCh       *amqp.Channel
-	simulacaoCreditoPessoalCh       *amqp.Channel
 	webhookCh                       *amqp.Channel
-	simulacaoCreditoPessoalQueue    string
-	digitacaoCreditoPessoalQueue    string
-	dbQueue                         string
 	cobrancaCh                      *amqp.Channel
+	consultaCh                      *amqp.Channel
 	cancelamentoCreditoPessoalCh    *amqp.Channel
 	liberacaoCreditoPessoalCh       *amqp.Channel
+	dbQueue                         string
 	cobrancaQueue                   string
+	consultaQueue                   string
 	liberacaoCreditoPessoalQueue    string
 	cancelamentoCreditoPessoalQueue string
 }
@@ -36,7 +36,9 @@ func setUpCobrancaProducer(rmq *RabbitMQ, p producer) {
 		dbQueue:       rmq.dbqueue,
 		webhookCh:     rmq.webhookCh,
 		cobrancaCh:    rmq.cobrancaCh,
+		consultaCh:    rmq.consultaCh,
 		cobrancaQueue: rmq.cobrancaQueue,
+		consultaQueue: rmq.consultaQueue,
 	}
 
 }
@@ -54,6 +56,10 @@ func (c *CobrancaProducer) Produce(queue string, data any, delay time.Duration) 
 		switch queue {
 		case c.cobrancaQueue:
 			dlqData.Contexto = "producer cobrança"
+			c.Produce(c.dlqQueue, dlqData, 0)
+
+		case c.consultaQueue:
+			dlqData.Contexto = "producer consulta"
 			c.Produce(c.dlqQueue, dlqData, 0)
 
 		case c.webhookQueue:
@@ -96,6 +102,16 @@ func (c *CobrancaProducer) Produce(queue string, data any, delay time.Duration) 
 		}
 		return nil
 
+	case c.consultaQueue:
+		err := c.cobrancaCh.PublishWithContext(c.ctx, c.exchange, queue, false, false, msg)
+		if err != nil {
+			helpers.LogError(c.ctx, c.logger, c.location, "producer consulta", "", "erro ao gravar mensagem na fila de consultas", err.Error(), nil)
+			var dlqData = models.DLQData{Payload: data, Contexto: "producer consulta", Erro: err.Error(), Mensagem: "erro ao gravar mensagem na fila de consultas", Time: time.Now().In(c.location)}
+			c.Produce(c.dlqQueue, dlqData, 0)
+			return err
+		}
+		return nil
+
 	case c.webhookQueue:
 		err := c.webhookCh.PublishWithContext(c.ctx, c.exchange, queue, false, false, msg)
 		if err != nil {
@@ -105,21 +121,21 @@ func (c *CobrancaProducer) Produce(queue string, data any, delay time.Duration) 
 			return err
 		}
 		return nil
-		/*
-			case c.dbQueue:
-				for try := range config.DB_UPDATE_MAX_RETRIES {
-					if err := c.dbCh.PublishWithContext(c.ctx, c.exchange, queue, false, false, msg); err == nil {
-						return nil
-					} else {
-						errMsg := fmt.Sprintf("erro ao gravar mensagem na fila de atualização, tentativa %d", try+1)
-						helpers.LogError(c.ctx, c.logger, c.location, "producer atualização", "", errMsg, err.Error(), nil)
-					}
 
-				}
-				redisPayload := data.(models.UpdateDbData)
-				c.redisPublisher.Publish(redisPayload)
-				return err
-		*/
+	case c.dbQueue:
+		for try := range config.DB_UPDATE_MAX_RETRIES {
+			if err := c.dbCh.PublishWithContext(c.ctx, c.exchange, queue, false, false, msg); err == nil {
+				return nil
+			} else {
+				errMsg := fmt.Sprintf("erro ao gravar mensagem na fila de atualização, tentativa %d", try+1)
+				helpers.LogError(c.ctx, c.logger, c.location, "producer atualização", "", errMsg, err.Error(), nil)
+			}
+
+		}
+		redisPayload := data.(models.UpdateDbData)
+		c.redisPublisher.Publish(redisPayload)
+		return err
+
 	default:
 		err := errors.New("invalid queue name")
 		helpers.LogError(c.ctx, c.logger, c.location, "producer", "", "fila inválida", err.Error(), map[string]string{"fila": queue})

@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"cobranca-bmp/config"
 	"cobranca-bmp/helpers"
 	"cobranca-bmp/models"
 	"encoding/json"
@@ -15,19 +16,28 @@ func (r *RabbitMQ) setUpCobrancaConsumers() error {
 		return err
 	}
 
-	r.cobrancaCreditoPessoalMsgs = msgs
+	r.cobrancaMsgs = msgs
+
+	msgs, err = r.consultaCh.Consume(r.consultaQueue, "bmp-consulta", false, false, false, false, nil)
+	if err != nil {
+		return err
+	}
+
+	r.consultaMsgs = msgs
 
 	return nil
 }
 
 func (r *RabbitMQ) ConsumeCobrancaQueues() {
 	go r.ConsumeCobranca()
+	go r.ConsumeConsulta()
 
 }
 
-// ConsumeCobranca ficará em execução para ouvir as mensagens da fila de cobranças do CreditoPessoal.
+// ConsumeCobranca ficará em execução para ouvir as mensagens da fila de cobranças.
 func (r *RabbitMQ) ConsumeCobranca() {
-	for msg := range r.cobrancaCreditoPessoalMsgs {
+
+	for msg := range r.cobrancaMsgs {
 		var payload models.CobrancaTaskData
 		err := json.Unmarshal(msg.Body, &payload)
 		if err != nil {
@@ -83,6 +93,73 @@ func (r *RabbitMQ) ConsumeCobranca() {
 			}
 
 			helpers.LogError(r.ctx, r.logger, r.location, "Consumo de cobrança", "", "Erro ao realizar Ack de mensagem", err.Error(), nil)
+			r.baseProducer.Produce(r.dlqQueue, dlqData, 0)
+		}
+
+	}
+}
+
+// ConsumeCobranca ficará em execução para ouvir as mensagens da fila de consultas.
+func (r *RabbitMQ) ConsumeConsulta() {
+	for msg := range r.consultaMsgs {
+		var payload models.CobrancaTaskData
+		payload.Status = config.STATUS_CONSULTAR_COBRANCA
+		err := json.Unmarshal(msg.Body, &payload)
+		if err != nil {
+			var dlqData = models.DLQData{
+				Payload:  payload,
+				Contexto: "Consumo de consulta",
+				Mensagem: "Erro ao deserializar json para requisitar para consulta na fila",
+				Erro:     err.Error(),
+				Time:     time.Now().In(r.location),
+			}
+
+			if err := msg.Nack(false, false); err != nil {
+				dlqData.Mensagem += "\n " + "Erro ao realizar Nack de mensagem"
+				dlqData.Erro += "\n " + err.Error()
+				helpers.LogError(r.ctx, r.logger, r.location, "Consumo de consulta", "", "Erro ao realizar Nack de mensagem", err.Error(), nil)
+			}
+			helpers.LogError(r.ctx, r.logger, r.location, "Consumo de consulta", "", "Erro ao deserializar json para requisitar para consulta na fila", err.Error(), nil)
+			r.cobrancaProducer.Produce(r.dlqQueue, dlqData, 0)
+			continue
+		}
+
+		helpers.LogInfo(r.ctx, r.logger, r.location, "Consumo de consulta", "", "Entrou na fila de consulta", map[string]any{
+			"IdempotencyKey":   payload.IdempotencyKey,
+			"IdProposta":       payload.IdProposta,
+			"timeoutRetries":   payload.TimeoutRetries,
+			"rateLimitRetries": payload.RateLimitRetries,
+			"consultaRetries":  payload.ConsultaRetries,
+			"delay":            payload.CurrentDelay,
+			"modoConsulta":     payload.ModoConsulta,
+		})
+
+		_, _, _, err = r.cobrancaService.Cobranca(&payload)
+		if err != nil {
+			if err := msg.Nack(false, false); err != nil {
+				var dlqData = models.DLQData{
+					Payload:  payload,
+					Contexto: "Consumo de consulta",
+					Mensagem: "Erro ao realizar Nack de mensagem",
+					Erro:     err.Error(),
+					Time:     time.Now().In(r.location),
+				}
+				helpers.LogError(r.ctx, r.logger, r.location, "Consumo de consulta", "", "Erro ao realizar Nack de mensagem", err.Error(), nil)
+				r.baseProducer.Produce(r.dlqQueue, dlqData, 0)
+			}
+			continue
+		}
+
+		if err := msg.Ack(false); err != nil {
+			var dlqData = models.DLQData{
+				Payload:  payload,
+				Contexto: "Consumo de consulta",
+				Mensagem: "Erro ao realizar Ack de mensagem",
+				Erro:     err.Error(),
+				Time:     time.Now().In(r.location),
+			}
+
+			helpers.LogError(r.ctx, r.logger, r.location, "Consumo de consulta", "", "Erro ao realizar Ack de mensagem", err.Error(), nil)
 			r.baseProducer.Produce(r.dlqQueue, dlqData, 0)
 		}
 

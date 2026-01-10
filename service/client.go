@@ -11,4 +11,5 @@ type CobrancaClient interface {
 	CancelarCobranca(payload models.CancelarCobrancaInput, token string, idempotencyKey string) (any, int, string, error)
 	LancamentoParcela(payload models.LancamentoParcelaAPIInput, token string, idempotencyKey string) (any, int, string, error)
 	ConsultarCobranca(payload models.ConsultarDetalhesInput, token string, idempotencyKey string) (models.ConsultaCobrancaResponse, int, string, error)
+	ConsultarBoleto(payload models.ConsultaBoletoInput, token string, idempotencyKey string) (models.BoletoConsultado, int, string, error)
 }

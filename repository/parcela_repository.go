@@ -135,7 +135,7 @@ DO UPDATE SET
 
 	if err != nil {
 		//	var logData = map[string]any{s}
-		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela simulacao_status", err.Error(), data)
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela bmp_cobrancas", err.Error(), data)
 		return isConnError(s.db, err), err
 	}
 
@@ -373,7 +373,36 @@ func (s *ParcelaRepo) UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidaca
 
 	if err != nil {
 		var logData = map[string]any{"id_proposta_parcela": IdPropostaParcela, "codigo_liquidacao": codigoLiquidacao}
-		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela simulacao_status", err.Error(), logData)
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela bmp_cobrancas", err.Error(), logData)
+		return isConnError(s.db, err), err
+	}
+
+	return false, nil
+}
+
+func (s *ParcelaRepo) UpdateNumeroBoleto(IdPropostaParcela, numeroBoleto int) (bool, error) {
+
+	now := time.Now().In(s.location)
+
+	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
+	defer cancel()
+	_, err := s.db.ExecContext(ctx, `
+	UPDATE
+	      bmp_cobrancas 
+	SET  
+        numero_boleto=$1, 
+		updated_at=$2     
+	WHERE
+	     id_proposta_parcela=$3`,
+
+		numeroBoleto,
+		now,
+		IdPropostaParcela,
+	)
+
+	if err != nil {
+		var logData = map[string]any{"id_proposta_parcela": IdPropostaParcela, "numero_boleto": numeroBoleto}
+		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao realizar update na tabela bmp_cobrancas", err.Error(), logData)
 		return isConnError(s.db, err), err
 	}
 
@@ -383,6 +412,7 @@ func (s *ParcelaRepo) UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidaca
 func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int) (models.CobrancaBMP, error) {
 	var cobranca models.CobrancaBMP
 	cobranca.CodigoLiquidacao = codigoLiquidacao
+	var numeroBoleto sql.NullInt64
 	numeroCCBString := strconv.Itoa(numeroCCB)
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
@@ -398,7 +428,8 @@ func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int
 		        url_webhook,
 		        id_proposta_parcela,
 		        parcela,
-		        id_forma_cobranca
+		        id_forma_cobranca,
+				numero_boleto
 			
 			FROM 
 			    bmp_cobrancas
@@ -414,13 +445,14 @@ func (s *ParcelaRepo) FindByCodLiquidacao(codigoLiquidacao string, numeroCCB int
 		&cobranca.UrlWebhook,
 		&cobranca.IdPropostaParcela,
 		&cobranca.NumeroParcela,
-		&cobranca.IdFormaCobranca)
+		&cobranca.IdFormaCobranca,
+		&numeroBoleto)
 	if err != nil {
 		var logData = map[string]any{"codigo_liquidacao": codigoLiquidacao, "numero_ccb": numeroCCB}
 		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por código de liquidação", err.Error(), logData)
 		return models.CobrancaBMP{}, err
 	}
-
+	cobranca.NumeroBoleto = int(numeroBoleto.Int64)
 	return cobranca, nil
 
 }
@@ -429,6 +461,7 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int, numeroCCB int) (models.Co
 	var cobranca models.CobrancaBMP
 	cobranca.NumeroParcela = numParcela
 	var codLiquidacao sql.NullString
+	var numeroBoleto sql.NullInt64
 	numeroCCBString := strconv.Itoa(numeroCCB)
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
@@ -444,7 +477,8 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int, numeroCCB int) (models.Co
 		        url_webhook,
 		        id_proposta_parcela,
 		      codigo_liquidacao,
-		        id_forma_cobranca
+		        id_forma_cobranca,
+				numero_boleto
 			
 			FROM 
 			    bmp_cobrancas
@@ -460,7 +494,9 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int, numeroCCB int) (models.Co
 		&cobranca.UrlWebhook,
 		&cobranca.IdPropostaParcela,
 		&codLiquidacao,
-		&cobranca.IdFormaCobranca)
+		&cobranca.IdFormaCobranca,
+		&numeroBoleto,
+	)
 	if err != nil {
 		var logData = map[string]any{"parcela": numParcela, "numero_ccb": numeroCCB}
 		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por número de parcela", err.Error(), logData)
@@ -468,6 +504,7 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int, numeroCCB int) (models.Co
 	}
 
 	cobranca.CodigoLiquidacao = codLiquidacao.String
+	cobranca.NumeroBoleto = int(numeroBoleto.Int64)
 
 	return cobranca, nil
 
@@ -476,6 +513,7 @@ func (s *ParcelaRepo) FindByNumParcela(numParcela int, numeroCCB int) (models.Co
 func (s *ParcelaRepo) FindByIdPropostaParcela(idPropostaParcela int) (models.CobrancaBMP, error) {
 	var cobranca models.CobrancaBMP
 	var codLiquidacao sql.NullString
+	var numeroBoleto sql.NullInt64
 	cobranca.IdPropostaParcela = idPropostaParcela
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
@@ -490,6 +528,7 @@ func (s *ParcelaRepo) FindByIdPropostaParcela(idPropostaParcela int) (models.Cob
 		        numero_ccb,
 		        url_webhook,
 		      codigo_liquidacao,
+			  numero_boleto,
 		        id_forma_cobranca
 			
 			FROM 
@@ -505,6 +544,7 @@ func (s *ParcelaRepo) FindByIdPropostaParcela(idPropostaParcela int) (models.Cob
 		&cobranca.NumeroCCB,
 		&cobranca.UrlWebhook,
 		&codLiquidacao,
+		&numeroBoleto,
 		&cobranca.IdFormaCobranca)
 	if err != nil {
 		var logData = map[string]any{"id_proposta_parcela": idPropostaParcela}
@@ -516,6 +556,7 @@ func (s *ParcelaRepo) FindByIdPropostaParcela(idPropostaParcela int) (models.Cob
 	}
 
 	cobranca.CodigoLiquidacao = codLiquidacao.String
+	cobranca.NumeroBoleto = int(numeroBoleto.Int64)
 
 	return cobranca, nil
 
@@ -524,6 +565,7 @@ func (s *ParcelaRepo) FindByIdPropostaParcela(idPropostaParcela int) (models.Cob
 func (s *ParcelaRepo) FindByDataVencimento(dataVencimento string, numeroCCB int) (models.CobrancaBMP, error) {
 	var cobranca models.CobrancaBMP
 	numeroCCBString := strconv.Itoa(numeroCCB)
+	var numeroBoleto sql.NullInt64
 
 	ctx, cancel := context.WithTimeout(context.Background(), config.DB_QUERY_TIMEOUT)
 	defer cancel()
@@ -539,6 +581,7 @@ func (s *ParcelaRepo) FindByDataVencimento(dataVencimento string, numeroCCB int)
 		        id_proposta_parcela,
 		        codigo_liquidacao,
 			    parcela,
+				numero_boleto,
 		        id_forma_cobranca
 			
 			FROM 
@@ -556,12 +599,14 @@ func (s *ParcelaRepo) FindByDataVencimento(dataVencimento string, numeroCCB int)
 		&cobranca.IdPropostaParcela,
 		&cobranca.CodigoLiquidacao,
 		&cobranca.NumeroParcela,
+		&numeroBoleto,
 		&cobranca.IdFormaCobranca)
 	if err != nil {
 		var logData = map[string]any{"data_vencimento": dataVencimento, "numero_ccb": numeroCCB}
 		helpers.LogError(s.ctx, s.logger, s.location, "db", "", "Erro ao buscar em cobranca_bmp por data de vencimento", err.Error(), logData)
 		return models.CobrancaBMP{}, err
 	}
+	cobranca.NumeroBoleto = int(numeroBoleto.Int64)
 
 	return cobranca, nil
 

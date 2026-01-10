@@ -6,6 +6,7 @@ import "cobranca-bmp/models"
 
 type ParcelaRepository interface {
 	UpdateCodLiquidacao(IdPropostaParcela int, codigoLiquidacao string) (bool, error)
+	UpdateNumeroBoleto(IdPropostaParcela, numeroBoleto int) (bool, error)
 	UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInput) (bool, error)
 	UpdateCancelamentoCobranca(data models.CancelarCobrancaFrontendInput, codigoLiquidacao string) (bool, error)
 	UpdateLancamentoParcela(data models.LancamentoParcelaFrontendInput) (bool, error)
