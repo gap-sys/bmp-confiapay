@@ -5,6 +5,7 @@ import "os"
 type UpdateDbData struct {
 	IdPropostaParcela    int                             `json:"idPropostaParcela"`
 	CodigoLiquidacao     string                          `json:"codigoLiquidacao"`
+	NumeroBoleto         int                             `json:"numeroBoleto"`
 	Action               string                          `json:"action"`
 	GeracaoParcela       *GerarCobrancaFrontendInput     `json:"geracaoParcela"`
 	CancelamentoCobranca *CancelarCobrancaFrontendInput  `json:"cancelamentoCobranca"`

@@ -52,10 +52,13 @@ func (u *UpdateService) UpdateAssync(data models.UpdateDbData) (bool, error) {
 		noConn, err = u.UpdateGeracaoParcela(data, true)
 
 	case "update_cancelamento":
-		noConn, err = u.UpdateGeracaoParcela(data, true)
+		noConn, err = u.UpdateCancelamentoParcela(data, true)
 
 	case "update_lancamento":
 		noConn, err = u.UpdateLancamentoParcela(data, true)
+
+	case "update_numero_boleto":
+		noConn, err = u.UpdateNumeroBoleto(data, true)
 
 	default:
 		return false, errors.New("ação de update inválida")
@@ -66,6 +69,29 @@ func (u *UpdateService) UpdateAssync(data models.UpdateDbData) (bool, error) {
 func (u *UpdateService) UpdateCodLiquidacao(data models.UpdateDbData, calledAssync bool) (bool, error) {
 
 	noConn, err := u.parcelaRepository.UpdateCodLiquidacao(data.IdPropostaParcela, data.CodigoLiquidacao)
+	if err != nil {
+		if !noConn {
+			var dlqData = models.DLQData{
+				Contexto: "db",
+				Payload:  nil,
+				Mensagem: "falha ao realizar update de código liquidação",
+				Erro:     err.Error(),
+				Time:     time.Now().In(u.loc),
+			}
+			u.queue.Produce(config.DLQ_QUEUE, dlqData, 0)
+		} else {
+			if !calledAssync {
+				u.queue.Produce(config.DB_QUEUE, data, config.DB_QUEUE_DELAY)
+			}
+		}
+		return noConn, err
+	}
+	return false, nil
+}
+
+func (u *UpdateService) UpdateNumeroBoleto(data models.UpdateDbData, calledAssync bool) (bool, error) {
+
+	noConn, err := u.parcelaRepository.UpdateNumeroBoleto(data.IdPropostaParcela, data.NumeroBoleto)
 	if err != nil {
 		if !noConn {
 			var dlqData = models.DLQData{
@@ -110,7 +136,7 @@ func (u *UpdateService) UpdateGeracaoParcela(data models.UpdateDbData, calledAss
 
 func (u *UpdateService) UpdateCancelamentoParcela(data models.UpdateDbData, calledAssync bool) (bool, error) {
 
-	noConn, err := u.parcelaRepository.UpdateCancelamentoCobranca(*data.CancelamentoCobranca, data.CodigoLiquidacao)
+	noConn, err := u.parcelaRepository.UpdateCancelamentoCobranca(*data.CancelamentoCobranca)
 	if err != nil {
 		if !noConn {
 			var dlqData = models.DLQData{

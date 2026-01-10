@@ -15,34 +15,37 @@ import (
 // RabbitMQ é a struct que contém as configurações e canais do RabbitMQ.
 
 type RabbitMQ struct {
-	ctx                        context.Context
-	conn                       *amqp.Connection
-	exchange                   string
-	dlqExchange                string
-	cobrancaCh                 *amqp.Channel
-	webhookCh                  *amqp.Channel
-	dbCh                       *amqp.Channel
-	DlqCh                      *amqp.Channel
-	webhookMsgs                <-chan amqp.Delivery
-	dbMsgs                     <-chan amqp.Delivery
-	cobrancaCreditoPessoalMsgs <-chan amqp.Delivery
-	cobrancaQueue              string
-	webhookQueue               string
-	dbqueue                    string
-	dlqQueue                   string
-	dbService                  dbService
-	cobrancaService            CobrancaCreditoPessoalService
-	webhookService             WebhookService
-	QOS                        int
-	globalQOS                  bool
-	url                        string
-	errchan                    chan *amqp.Error
-	cache                      RedisPublisher
-	logger                     *slog.Logger
-	location                   *time.Location
-	baseProducer               *producer
-	cobrancaProducer           *CobrancaProducer
-	mu                         *sync.Mutex
+	ctx              context.Context
+	conn             *amqp.Connection
+	exchange         string
+	dlqExchange      string
+	cobrancaCh       *amqp.Channel
+	consultaCh       *amqp.Channel
+	webhookCh        *amqp.Channel
+	dbCh             *amqp.Channel
+	DlqCh            *amqp.Channel
+	webhookMsgs      <-chan amqp.Delivery
+	dbMsgs           <-chan amqp.Delivery
+	cobrancaMsgs     <-chan amqp.Delivery
+	consultaMsgs     <-chan amqp.Delivery
+	cobrancaQueue    string
+	consultaQueue    string
+	webhookQueue     string
+	dbqueue          string
+	dlqQueue         string
+	dbService        dbService
+	cobrancaService  CobrancaCreditoPessoalService
+	webhookService   WebhookService
+	QOS              int
+	globalQOS        bool
+	url              string
+	errchan          chan *amqp.Error
+	cache            RedisPublisher
+	logger           *slog.Logger
+	location         *time.Location
+	baseProducer     *producer
+	cobrancaProducer *CobrancaProducer
+	mu               *sync.Mutex
 }
 
 // NewRMQ cria uma nova instância de RabbitMQ.
@@ -58,6 +61,7 @@ func NewRMQ(ctx context.Context, loc *time.Location, cache RedisPublisher,
 		location:        loc,
 		errchan:         make(chan *amqp.Error),
 		cobrancaQueue:   config.COBRANCA_QUEUE,
+		consultaQueue:   config.CONSULTA_QUEUE,
 		dlqQueue:        config.DLQ_QUEUE,
 		dbqueue:         config.DB_QUEUE,
 		webhookQueue:    config.WEBHOOK_QUEUE,

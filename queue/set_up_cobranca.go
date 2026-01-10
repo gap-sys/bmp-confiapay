@@ -14,6 +14,15 @@ func (r *RabbitMQ) declareCobrancaQueues() error {
 		return err
 	}
 
+	_, err = r.consultaCh.QueueDeclare(r.consultaQueue, true, false, false, false, nil)
+	if err != nil {
+		return err
+	}
+	err = r.consultaCh.QueueBind(r.consultaQueue, r.consultaQueue, r.exchange, false, nil)
+	if err != nil {
+		return err
+	}
+
 	return nil
 
 }
@@ -27,6 +36,13 @@ func (r *RabbitMQ) setUpCobrancaChannels() error {
 
 	r.cobrancaCh = ch
 
+	ch, err = r.conn.Channel()
+	if err != nil {
+		return err
+	}
+
+	r.consultaCh = ch
+
 	return nil
 }
 
@@ -38,6 +54,12 @@ func (r *RabbitMQ) closeCobranca() error {
 		return err
 	}
 	helpers.LogInfo(r.ctx, r.logger, r.location, "rabbitmq-close", "", "canal de cobrança fechado", nil)
+
+	if err := r.consultaCh.Close(); err != nil {
+		helpers.LogError(r.ctx, r.logger, r.location, "rabbitmq-close", "", "falha ao fechar canal de consulta", err.Error(), nil)
+		return err
+	}
+	helpers.LogInfo(r.ctx, r.logger, r.location, "rabbitmq-close", "", "canal de consulta fechado", nil)
 
 	return nil
 
@@ -57,6 +79,13 @@ func (r *RabbitMQ) checkCreditoPessoal() (map[string]any, error) {
 		info["Cobranca"] = "fechado"
 	} else {
 		info["Cobranca"] = "ok"
+	}
+
+	if r.consultaCh.IsClosed() {
+		errors = append(errors, "canal de consultas fechado")
+		info["Consulta"] = "fechado"
+	} else {
+		info["Consulta"] = "ok"
 	}
 
 	if len(errors) > 0 {
