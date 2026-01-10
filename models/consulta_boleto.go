@@ -27,11 +27,11 @@ type BoletoConsultado struct {
 	Messages any      `json:"messages"`
 }
 
-func (b Boleto) FormatToWebhook() BoletoWebhook {
-	return BoletoWebhook{
+func (b Boleto) FormatToWebhook() []BoletoWebhook {
+	return []BoletoWebhook{{
 		Boleto:       b,
 		UrlImpressao: b.Impressao,
-	}
+	}}
 
 }
 
