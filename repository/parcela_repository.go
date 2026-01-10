@@ -142,7 +142,7 @@ DO UPDATE SET
 	return false, nil
 }
 
-func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFrontendInput, codigoLiquidacao string) (bool, error) {
+func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFrontendInput) (bool, error) {
 
 	now := time.Now().In(s.location)
 
@@ -189,7 +189,6 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
     id_securitizadora,
 	id_convenio,
     numero_acompanhamento,
-    codigo_liquidacao,
     numero_ccb,
     url_webhook,
     id_proposta_parcela,
@@ -204,8 +203,8 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
     $6,  
     $7, 
     $8,
-	$9,
-	$10
+	$9
+
 	
 	
 )
@@ -215,7 +214,6 @@ DO UPDATE SET
     id_securitizadora     = EXCLUDED.id_securitizadora,
 	id_convenio            = EXCLUDED.id_convenio,
     numero_acompanhamento = EXCLUDED.numero_acompanhamento,
-    codigo_liquidacao     = EXCLUDED.codigo_liquidacao,
     numero_ccb            = EXCLUDED.numero_ccb,
     url_webhook           = EXCLUDED.url_webhook,
 	id_proposta_parcela   = EXCLUDED.id_proposta_parcela,
@@ -226,7 +224,6 @@ DO UPDATE SET
 		data.IdSecuritizadora,
 		data.IdConvenio,
 		data.NumeroAcompanhamento,
-		codigoLiquidacao,
 		data.NumeroCCB,
 		data.UrlWebhook,
 		data.IdPropostaParcela,

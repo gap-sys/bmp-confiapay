@@ -35,6 +35,7 @@ type CobrancaTaskData struct {
 	ConsultarCobrancaInput ConsultarDetalhesInput         `json:"consultarCobrancaInput"`
 	CalledAssync           bool                           `json:"calledAssync"`
 	ModoConsulta           string                         `json:"modoConsulta"`
+	Updated                bool                           `json:"updated"`
 	WhData                 map[string]any
 	CobrancaDBInfo         CobrancaBMP `json:"cobrancaDBInfo"`
 }
@@ -53,6 +54,7 @@ func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, num
 		WhData:               nil,
 		ModoConsulta:         config.CONSULTA_DETALHADA,
 		ConsultaRetries:      0,
+		Updated:              false,
 	}
 	c.GenIdempotencyKey(idempotencyKey)
 

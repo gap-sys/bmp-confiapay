@@ -52,7 +52,7 @@ func (u *UpdateService) UpdateAssync(data models.UpdateDbData) (bool, error) {
 		noConn, err = u.UpdateGeracaoParcela(data, true)
 
 	case "update_cancelamento":
-		noConn, err = u.UpdateGeracaoParcela(data, true)
+		noConn, err = u.UpdateCancelamentoParcela(data, true)
 
 	case "update_lancamento":
 		noConn, err = u.UpdateLancamentoParcela(data, true)
@@ -136,7 +136,7 @@ func (u *UpdateService) UpdateGeracaoParcela(data models.UpdateDbData, calledAss
 
 func (u *UpdateService) UpdateCancelamentoParcela(data models.UpdateDbData, calledAssync bool) (bool, error) {
 
-	noConn, err := u.parcelaRepository.UpdateCancelamentoCobranca(*data.CancelamentoCobranca, data.CodigoLiquidacao)
+	noConn, err := u.parcelaRepository.UpdateCancelamentoCobranca(*data.CancelamentoCobranca)
 	if err != nil {
 		if !noConn {
 			var dlqData = models.DLQData{

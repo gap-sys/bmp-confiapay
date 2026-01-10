@@ -146,13 +146,18 @@ func (c *CobrancalService) GerarCobranca(payload *models.CobrancaTaskData) (any,
 	var statusCode int
 	var data models.GerarCobrancaResponse
 
-	_, err := c.updateService.UpdateGeracaoParcela(models.UpdateDbData{
-		GeracaoParcela: &payload.GerarCobrancaInput,
-		Action:         "update_geracao",
-	}, true)
+	if !payload.Updated {
 
-	if err != nil {
-		return c.HandleErrorCobranca(config.API_STATUS_ERR, 500, payload, models.NewAPIError("", "Não foi possível gravar cobrancas na base de dados: "+err.Error(), strconv.Itoa(payload.GerarCobrancaInput.IdProposta)))
+		_, err := c.updateService.UpdateGeracaoParcela(models.UpdateDbData{
+			GeracaoParcela: &payload.GerarCobrancaInput,
+			Action:         "update_geracao",
+		}, true)
+		if err != nil {
+			return c.HandleErrorCobranca(config.API_STATUS_ERR, 500, payload, models.NewAPIError("", "Não foi possível gravar cobrancas na base de dados: "+err.Error(), strconv.Itoa(payload.GerarCobrancaInput.IdProposta)))
+		}
+
+		payload.Updated = true
+
 	}
 
 	payload.CobrancaDBInfo.IdFormaCobranca = payload.GerarCobrancaInput.TipoCobranca
@@ -302,11 +307,18 @@ func (c *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 
 func (c *CobrancalService) CancelarCobranca(payload *models.CobrancaTaskData) (any, string, int, error) {
 
-	c.updateService.UpdateCancelamentoParcela(models.UpdateDbData{
-		CancelamentoCobranca: &payload.CancelamentoData,
-		CodigoLiquidacao:     payload.CancelamentoCobranca.DTOCancelarCobrancas.CodigosLiquidacoes[0],
-		Action:               "update_cancelamento",
-	}, false)
+	if !payload.Updated {
+		_, err := c.updateService.UpdateCancelamentoParcela(models.UpdateDbData{
+			CancelamentoCobranca: &payload.CancelamentoData,
+			CodigoLiquidacao:     payload.CancelamentoCobranca.DTOCancelarCobrancas.CodigosLiquidacoes[0],
+			Action:               "update_cancelamento",
+		}, true)
+
+		if err != nil {
+			return c.HandleErrorCobranca(config.API_STATUS_ERR, 500, payload, models.NewAPIError("", "Não foi possível gravar cobrancas na base de dados: "+err.Error(), strconv.Itoa(payload.GerarCobrancaInput.IdProposta)))
+		}
+		payload.Updated = true
+	}
 
 	data, statusCode, status, err := c.client.CancelarCobranca(payload.CancelamentoCobranca, payload.Token, payload.IdempotencyKey)
 
@@ -338,10 +350,18 @@ func (c *CobrancalService) CancelarCobranca(payload *models.CobrancaTaskData) (a
 
 func (c *CobrancalService) LancamentoParcela(payload *models.CobrancaTaskData) (any, string, int, error) {
 
-	c.updateService.UpdateLancamentoParcela(models.UpdateDbData{
-		LancamentoParcela: &payload.LancamentoParcela,
-		Action:            "update_lancamento",
-	}, false)
+	if !payload.Updated {
+		_, err := c.updateService.UpdateLancamentoParcela(models.UpdateDbData{
+			LancamentoParcela: &payload.LancamentoParcela,
+			Action:            "update_lancamento",
+		}, true)
+
+		if err != nil {
+			return c.HandleErrorCobranca(config.API_STATUS_ERR, 500, payload, models.NewAPIError("", "Não foi possível gravar cobrancas na base de dados: "+err.Error(), strconv.Itoa(payload.GerarCobrancaInput.IdProposta)))
+		}
+
+		payload.Updated = true
+	}
 
 	data, statusCode, status, err := c.client.LancamentoParcela(payload.FormatLancamento(), payload.Token, payload.IdempotencyKey)
 
