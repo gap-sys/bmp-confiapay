@@ -91,10 +91,10 @@ var (
 	RABBITMQ_SIMULACAO_QOS int
 	RABBITMQ_GLOBAL_QOS    bool
 	WEBHOOK_QUEUE          string
-	DADOS_BANCARIOS_QUEUE  string
-	DB_QUEUE               string
-	BMP_EXCHANGE           string
-	DLQ_EXCHANGE           string
+
+	DB_QUEUE     string
+	BMP_EXCHANGE string
+	DLQ_EXCHANGE string
 
 	COBRANCA_QUEUE string
 	CONSULTA_QUEUE string
@@ -148,7 +148,7 @@ func LoadEnvVar(files ...string) error {
 
 // Recupera as variáveis de ambiente setadas em LoadEnvVar e as atribui a variáveis que serão utilizadas no programa.
 func InitializeEnvVar() error {
-	DADOS_BANCARIOS_QUEUE = getEnv("DADOS_BANCARIOS_QUEUE")
+
 	DB_QUEUE = getEnv("DB_QUEUE")
 	BMP_EXCHANGE = getEnv("BMP_EXCHANGE")
 	DLQ_EXCHANGE = getEnv("DLQ_EXCHANGE")
