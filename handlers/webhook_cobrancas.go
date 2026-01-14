@@ -112,7 +112,7 @@ func (w *WebhookController) WebhookCobranca() fiber.Handler {
 
 					return
 
-				case 3: //Parcela paga
+				case 3: //Parcela paga ou saldo de parcela aumentado
 					var lancamento models.EventoLancamentoParcela
 					json.Unmarshal(rawBody, &lancamento)
 					bodyProcessed = true

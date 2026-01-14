@@ -545,8 +545,15 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 	}
 
 	if statusCode == 500 || status == config.API_STATUS_TIMEOUT || status == config.API_STATUS_RATE_LIMIT {
-		errAPI.Msg = fmt.Sprintf("%s indisponível(%s)", operation, errAPI.Messages[0].Code)
+		errAPI.Msg = fmt.Sprintf("%s indisponível", operation)
+		if errAPI.Messages[0].Code != "" {
+			errAPI.Msg += fmt.Sprintf("(%s)", errAPI.Messages[0].Code)
+		}
 
+	}
+
+	if errAPI.Msg == "" {
+		errAPI.Msg = fmt.Sprintf("%s indisponível", operation)
 	}
 
 	if payload.Status == config.STATUS_CONSULTAR_COBRANCA {
