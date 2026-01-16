@@ -535,7 +535,7 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 	if len(errAPI.Messages) < 1 {
 		errAPI.Messages = []models.APIMessage{
 			{
-				Description: errAPI.Error(),
+				Description: fmt.Sprintf("%s indisponível", operation),
 			},
 		}
 	}
