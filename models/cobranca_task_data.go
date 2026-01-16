@@ -79,8 +79,8 @@ func (a *CobrancaTaskData) SetTry(interval time.Duration, status string) {
 	}
 
 	if a.Status == config.STATUS_CONSULTAR_COBRANCA {
-		if a.ConsultaRetries > int(config.TIMEOUT_MAX_RETRIES) {
-			a.ConsultaRetries = int(config.TIMEOUT_MAX_RETRIES)
+		if a.ConsultaRetries > 10 {
+			a.ConsultaRetries = 10
 		}
 		a.ConsultaRetries--
 		return
