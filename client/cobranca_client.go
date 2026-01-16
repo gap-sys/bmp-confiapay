@@ -51,7 +51,7 @@ func (c *CobrancaClient) GerarCobrancaParcela(payload models.CobrancaUnicaInput,
 			status = config.API_STATUS_RATE_LIMIT
 		case http.StatusUnauthorized:
 			status = config.API_STATUS_UNAUTHORIZED
-			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.Dto.CodigoOperacao)
+			APIErr = models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", payload.Dto.CodigoOperacao)
 		default:
 			status = config.API_STATUS_ERR
 
@@ -102,7 +102,7 @@ func (c *CobrancaClient) GerarCobrancaParcelasMultiplas(payload models.Multiplas
 			APIErr.Msg = "Geração de cobranças indisponível"
 		case http.StatusUnauthorized:
 			status = config.API_STATUS_UNAUTHORIZED
-			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.Dto.CodigoOperacao)
+			APIErr = models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", payload.Dto.CodigoOperacao)
 			APIErr.Result = APIErr
 
 		default:
@@ -152,7 +152,7 @@ func (c *CobrancaClient) CancelarCobranca(payload models.CancelarCobrancaInput, 
 			status = config.API_STATUS_RATE_LIMIT
 		case http.StatusUnauthorized:
 			status = config.API_STATUS_UNAUTHORIZED
-			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.DTO.CodigoOperacao)
+			APIErr = models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", payload.DTO.CodigoOperacao)
 
 		default:
 			status = config.API_STATUS_ERR
@@ -199,7 +199,7 @@ func (c *CobrancaClient) LancamentoParcela(payload models.LancamentoParcelaAPIIn
 			status = config.API_STATUS_RATE_LIMIT
 		case http.StatusUnauthorized:
 			status = config.API_STATUS_UNAUTHORIZED
-			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.DTO.CodigoOperacao)
+			APIErr = models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", payload.DTO.CodigoOperacao)
 
 		default:
 			status = config.API_STATUS_ERR
@@ -245,7 +245,7 @@ func (c *CobrancaClient) ConsultarCobranca(payload models.ConsultarDetalhesInput
 			status = config.API_STATUS_RATE_LIMIT
 		case http.StatusUnauthorized:
 			status = config.API_STATUS_UNAUTHORIZED
-			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.DTO.CodigoOperacao)
+			APIErr = models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", payload.DTO.CodigoOperacao)
 
 		default:
 			status = config.API_STATUS_ERR
@@ -299,7 +299,7 @@ func (c *CobrancaClient) ConsultarBoleto(payload models.ConsultaBoletoInput, tok
 			status = config.API_STATUS_RATE_LIMIT
 		case http.StatusUnauthorized:
 			status = config.API_STATUS_UNAUTHORIZED
-			APIErr = models.NewAPIError("", "Não foi possível se autenticar no BMP", payload.DTO.CodigoOperacao)
+			APIErr = models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", payload.DTO.CodigoOperacao)
 
 		default:
 			status = config.API_STATUS_ERR
