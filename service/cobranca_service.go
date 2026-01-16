@@ -63,13 +63,13 @@ func NewCobrancaService(ctx context.Context, logger *slog.Logger, loc *time.Loca
 	}
 }
 
-func (c CobrancalService) Auth(data models.AuthPayload) (string, error) {
-	return c.client.Auth(data)
+func (c CobrancalService) Auth(data models.AuthPayload, expire bool) (string, error) {
+	return c.client.Auth(data, expire)
 }
 
 func (c *CobrancalService) Cobranca(payload *models.CobrancaTaskData) (any, string, int, error) {
 	if payload.Token == "" {
-		token, err := c.Auth(payload.AuthPayload)
+		token, err := c.Auth(payload.AuthPayload, false)
 		if err != nil {
 			return nil, "", 401, err
 		}
@@ -283,7 +283,7 @@ func (c *CobrancalService) GerarCobrancaParcelasMultiplas(payload *models.Cobran
 	data, statusCode, status, err := c.client.GerarCobrancaParcelasMultiplas(payloadBMP, payload.Token, payload.IdempotencyKey)
 
 	if status == config.API_STATUS_UNAUTHORIZED {
-		token, authErr := c.Auth(payload.AuthPayload)
+		token, authErr := c.Auth(payload.AuthPayload, true)
 		if authErr != nil {
 			return data, statusCode, status, err
 		}
@@ -323,7 +323,7 @@ func (c *CobrancalService) CancelarCobranca(payload *models.CobrancaTaskData) (a
 	data, statusCode, status, err := c.client.CancelarCobranca(payload.CancelamentoCobranca, payload.Token, payload.IdempotencyKey)
 
 	if status == config.API_STATUS_UNAUTHORIZED {
-		token, authErr := c.Auth(payload.AuthPayload)
+		token, authErr := c.Auth(payload.AuthPayload, true)
 		if authErr != nil {
 			return data, status, statusCode, err
 		}
@@ -366,7 +366,7 @@ func (c *CobrancalService) LancamentoParcela(payload *models.CobrancaTaskData) (
 	data, statusCode, status, err := c.client.LancamentoParcela(payload.FormatLancamento(), payload.Token, payload.IdempotencyKey)
 
 	if status == config.API_STATUS_UNAUTHORIZED {
-		token, authErr := c.Auth(payload.AuthPayload)
+		token, authErr := c.Auth(payload.AuthPayload, true)
 		if authErr != nil {
 			return data, status, statusCode, err
 		}
@@ -395,7 +395,7 @@ func (c *CobrancalService) ConsultarCobranca(payload *models.CobrancaTaskData, c
 	data, statusCode, status, err := c.client.ConsultarCobranca(payload.ConsultarCobrancaInput, payload.Token, payload.IdempotencyKey)
 
 	if status == config.API_STATUS_UNAUTHORIZED {
-		token, authErr := c.Auth(payload.AuthPayload)
+		token, authErr := c.Auth(payload.AuthPayload, true)
 		if authErr != nil {
 			return data, status, statusCode, err
 		}
@@ -462,7 +462,7 @@ func (c *CobrancalService) ConsultarBoleto(payload *models.CobrancaTaskData, cal
 	data, statusCode, status, err := c.client.ConsultarBoleto(consultaInput, payload.Token, payload.IdempotencyKey)
 
 	if status == config.API_STATUS_UNAUTHORIZED {
-		token, authErr := c.Auth(payload.AuthPayload)
+		token, authErr := c.Auth(payload.AuthPayload, true)
 		if authErr != nil {
 			return data, status, statusCode, err
 		}
@@ -535,7 +535,7 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 	if len(errAPI.Messages) < 1 {
 		errAPI.Messages = []models.APIMessage{
 			{
-				Description: errAPI.Error(),
+				Description: fmt.Sprintf("%s indisponível", operation),
 			},
 		}
 	}

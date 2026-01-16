@@ -87,6 +87,7 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
     data_expiracao,
     parcela,
     id_forma_cobranca,
+	created_at,
     updated_at
 ) VALUES (
     $1,  
@@ -100,7 +101,8 @@ func (s *ParcelaRepo) UpdateGeracaoCobranca(data models.GerarCobrancaFrontendInp
     $9,  
     $10, 
     $11, 
-    $12
+    $12,
+	$13
 	
 
 )
@@ -130,6 +132,7 @@ DO UPDATE SET
 		data.DataExpiracao,
 		data.NumeroParcela,
 		data.TipoCobranca,
+		now,
 		now,
 	)
 
@@ -193,7 +196,8 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
     url_webhook,
     id_proposta_parcela,
 	parcela,
-    updated_at
+	created_at,
+	updated_at
 ) VALUES (
     $1,  
     $2,  
@@ -203,7 +207,8 @@ func (s *ParcelaRepo) UpdateCancelamentoCobranca(data models.CancelarCobrancaFro
     $6,  
     $7, 
     $8,
-	$9
+	$9,
+	$10
 
 	
 	
@@ -228,6 +233,7 @@ DO UPDATE SET
 		data.UrlWebhook,
 		data.IdPropostaParcela,
 		data.NumeroParcela,
+		now,
 		now,
 	)
 
@@ -291,6 +297,7 @@ func (s *ParcelaRepo) UpdateLancamentoParcela(data models.LancamentoParcelaFront
     url_webhook,
     id_proposta_parcela,
 	parcela,
+	created_at,
     updated_at
 ) VALUES (
     $1,  
@@ -301,7 +308,8 @@ func (s *ParcelaRepo) UpdateLancamentoParcela(data models.LancamentoParcelaFront
     $6,  
     $7, 
     $8,
-	$9
+	$9,
+	$10
 	
 	
 	
@@ -326,6 +334,7 @@ DO UPDATE SET
 		data.UrlWebhook,
 		data.IdPropostaParcela,
 		data.NumeroParcela,
+		now,
 		now,
 	)
 

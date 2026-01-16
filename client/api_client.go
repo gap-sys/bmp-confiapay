@@ -96,32 +96,39 @@ func (a APIClient) deserialize(src io.Reader, dst any) error {
 	return nil
 }
 
-func (a APIClient) Auth(data models.AuthPayload) (string, error) {
-	var cred = map[string]int{
+func (a APIClient) Auth(data models.AuthPayload, expire bool) (string, error) {
+	var cred = map[string]any{
 		"idConvenio":       data.IdConvenio,
 		"idSecuritizadora": data.IdSecuritizadora,
+		"expire":           expire,
 	}
 
 	req, err := a.newRequest("POST", a.authUrl, cred)
 	if err != nil {
-		return "", models.NewAPIError("", err.Error(), data.Id)
+		APIErr := models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", data.Id)
+		APIErr.Result = err.Error()
+		return "", APIErr
 	}
 
 	resp, err := a.doRequest(req)
 	if err != nil {
-		return "", models.NewAPIError("", err.Error(), data.Id)
+		APIErr := models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", data.Id)
+		APIErr.Result = err.Error()
+		return "", APIErr
 	}
 
 	if resp.StatusCode != 200 {
 		var apiErr models.APIError
 		if err := a.deserialize(resp.Body, &apiErr); err != nil {
-			return "", models.NewAPIError("", err.Error(), data.Id)
+			APIErr := models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", data.Id)
+			APIErr.Result = err.Error()
+			return "", APIErr
 
 		}
 
 		apiErr.HasError = true
 		if apiErr.Msg == "" {
-			apiErr.Msg = "Não foi possível obter token"
+			apiErr.Msg = "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte."
 		}
 		return "", apiErr
 
@@ -136,7 +143,9 @@ func (a APIClient) Auth(data models.AuthPayload) (string, error) {
 
 	token, ok := respBody["token"]
 	if !ok {
-		return "", models.NewAPIError("", "Token não encontrado", data.Id)
+		APIErr := models.NewAPIError("", "Falha na autenticação com o BMP. Caso o erro persista, entre em contato com o suporte.", data.Id)
+		APIErr.Result = respBody
+		return "", APIErr
 	}
 
 	return "BEARER " + token, nil
