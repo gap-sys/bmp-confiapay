@@ -557,11 +557,24 @@ func (c *CobrancalService) HandleErrorCobranca(status string, statusCode int, pa
 	}
 
 	if payload.Status == config.STATUS_CONSULTAR_COBRANCA {
-		payload.SetTry(config.TIMEOUT_DELAY, status)
-		payload.SwitchCobrancaMode()
-		payload.GenIdempotencyKey(c.cache.GenID())
-		c.queue.Produce(config.CONSULTA_QUEUE, payload, payload.CurrentDelay)
-		return nil, status, statusCode, errAPI
+
+		if payload.ConsultaRetries > 1 {
+			payload.SetTry(config.TIMEOUT_DELAY, status)
+			payload.SwitchCobrancaMode()
+			payload.GenIdempotencyKey(c.cache.GenID())
+			c.queue.Produce(config.CONSULTA_QUEUE, payload, payload.CurrentDelay)
+			return nil, status, statusCode, errAPI
+		} else {
+			var whData = make(map[string]any)
+
+			whData["has_error"] = true
+			whData["msg"] = errAPI.Msg
+			whData["id_proposta_parcela"] = payload.IdPropostaParcela
+			whData["operacao"] = "R"
+			c.webhookService.RequestToWebhook(models.NewWebhookTaskData(payload.WebhookUrl, whData, "cobranca service"))
+			return nil, status, statusCode, errAPI
+
+		}
 	}
 
 	if (status == config.API_STATUS_TIMEOUT && payload.TimeoutRetries > 1) || (status == config.API_STATUS_RATE_LIMIT && payload.RateLimitRetries > 1) {

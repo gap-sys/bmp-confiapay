@@ -53,7 +53,7 @@ func NewCobrancaTastkData(idempotencyKey int, status string, IdProposta int, num
 		Status:               status,
 		WhData:               nil,
 		ModoConsulta:         config.CONSULTA_DETALHADA,
-		ConsultaRetries:      0,
+		ConsultaRetries:      10,
 		Updated:              false,
 	}
 	c.GenIdempotencyKey(idempotencyKey)
@@ -79,7 +79,7 @@ func (a *CobrancaTaskData) SetTry(interval time.Duration, status string) {
 	}
 
 	if a.Status == config.STATUS_CONSULTAR_COBRANCA {
-		a.ConsultaRetries++
+		a.ConsultaRetries--
 		return
 	}
 }
