@@ -5,12 +5,12 @@ build:
 	docker run --name bmp-fgts -p 8080:8080 bmp
 
 upload:
-	docker tag bmpconfiapay sergiomsa/bmpconfiapay:v1
-	docker push sergiomsa/bmpconfiapay:v1
+	docker tag bmpconfiapay sergiomsa/bmpconfiapay:v2
+	docker push sergiomsa/bmpconfiapay:v2
 
 upload_homolog:
-	docker tag hbmpconfiapay sergiomsa/hbmpconfiapay:v1
-	docker push sergiomsa/hbmpconfiapay:v1
+	docker tag hbmpconfiapay sergiomsa/hbmpconfiapay:v2
+	docker push sergiomsa/hbmpconfiapay:v2
 
 local:
 	@if [ "$$(git rev-parse --abbrev-ref HEAD)" != "master" ]; then \
